@@ -1,4 +1,4 @@
-baseURL = 'https://davehart.co.uk/'
+baseURL = 'https://daveihart.github.io/davehart.co.uk/'
 languageCode = 'en-us'
 title = "Dave's DevOps blog"
 enableRobotsTXT = true
