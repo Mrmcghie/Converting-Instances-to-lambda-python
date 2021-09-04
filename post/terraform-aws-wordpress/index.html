@@ -17,13 +17,13 @@
 <meta name=description content="Well here we go then, where to start? It seemed only fitting that the first post covers the fun I had setting up this WordPress server and site. I looked around at some of the options available, payed hosting etc and decided that &amp;ldquo;hey, lets learn something and share the experience at the same time&amp;rdquo;. Rather than manually setting up and configure the server (easy), I decided to try automate it as much as possible.">
 <meta name=keywords content="Hugo,theme,jane">
 <meta name=generator content="Hugo 0.88.0">
-<link rel=canonical href=https://daveihart.github.io/davehart.co.uk/post/terraform-aws-wordpress/>
-<link rel=icon href=/davehart.co.uk/favicon.ico>
-<link rel=stylesheet href=/davehart.co.uk/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css integrity="sha256-+ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media=screen crossorigin=anonymous>
+<link rel=canonical href=https://daveihart.co.uk/post/terraform-aws-wordpress/>
+<link rel=icon href=/favicon.ico>
+<link rel=stylesheet href=/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css integrity="sha256-+ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media=screen crossorigin=anonymous>
 <meta property="og:title" content="First!  Terraform, AWS and WordPress - Part I">
 <meta property="og:description" content="Well here we go then, where to start? It seemed only fitting that the first post covers the fun I had setting up this WordPress server and site. I looked around at some of the options available, payed hosting etc and decided that &ldquo;hey, lets learn something and share the experience at the same time&rdquo;. Rather than manually setting up and configure the server (easy), I decided to try automate it as much as possible.">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://daveihart.github.io/davehart.co.uk/post/terraform-aws-wordpress/"><meta property="article:section" content="post">
+<meta property="og:url" content="https://daveihart.co.uk/post/terraform-aws-wordpress/"><meta property="article:section" content="post">
 <meta property="article:published_time" content="2020-09-19T02:59:40+00:00">
 <meta property="article:modified_time" content="2020-09-19T02:59:40+00:00">
 <meta itemprop=name content="First!  Terraform, AWS and WordPress - Part I">
@@ -38,7 +38,7 @@
 <body>
 <div id=mobile-navbar class=mobile-navbar>
 <div class=mobile-header-logo>
-<a href=/davehart.co.uk/ class=logo>Dave's blog</a>
+<a href=/ class=logo>Dave's blog</a>
 </div>
 <div class=mobile-navbar-icon>
 <span></span>
@@ -49,18 +49,18 @@
 <nav id=mobile-menu class="mobile-menu slideout-menu">
 <ul class=mobile-menu-list>
 <li class=mobile-menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/>Home</a>
+<a class=menu-item-link href=https://daveihart.co.uk/>Home</a>
 </li><li class=mobile-menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/post/>Posts</a>
+<a class=menu-item-link href=https://daveihart.co.uk/post/>Posts</a>
 </li><li class=mobile-menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/tags/>Tags</a>
+<a class=menu-item-link href=https://daveihart.co.uk/tags/>Tags</a>
 </li><li class=mobile-menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/about/about/>About</a>
+<a class=menu-item-link href=https://daveihart.co.uk/about/about/>About</a>
 </li>
 </ul>
 </nav>
-<link rel=stylesheet href=/davehart.co.uk/lib/photoswipe/photoswipe.min.css>
-<link rel=stylesheet href=/davehart.co.uk/lib/photoswipe/default-skin/default-skin.min.css>
+<link rel=stylesheet href=/lib/photoswipe/photoswipe.min.css>
+<link rel=stylesheet href=/lib/photoswipe/default-skin/default-skin.min.css>
 <div class=pswp tabindex=-1 role=dialog aria-hidden=true>
 <div class=pswp__bg></div>
 <div class=pswp__scroll-wrap>
@@ -99,23 +99,23 @@
 </div>
 <header id=header class="header container">
 <div class=logo-wrapper>
-<a href=/davehart.co.uk/ class=logo>
+<a href=/ class=logo>
 Dave's blog
 </a>
 </div>
 <nav class=site-navbar>
 <ul id=menu class=menu>
 <li class=menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/>Home</a>
+<a class=menu-item-link href=https://daveihart.co.uk/>Home</a>
 </li>
 <li class=menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/post/>Posts</a>
+<a class=menu-item-link href=https://daveihart.co.uk/post/>Posts</a>
 </li>
 <li class=menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/tags/>Tags</a>
+<a class=menu-item-link href=https://daveihart.co.uk/tags/>Tags</a>
 </li>
 <li class=menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/about/about/>About</a>
+<a class=menu-item-link href=https://daveihart.co.uk/about/about/>About</a>
 </li>
 </ul>
 </nav>
@@ -164,7 +164,7 @@ Dave's blog
 <li>Use the + drop-down menu and select New repository</li>
 </ul>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image4_hu5d8f631aa06eeba3749c1eeee6f67d86_4505_800x600_fit_box_3.png width=226 height=74>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image4_hu5d8f631aa06eeba3749c1eeee6f67d86_4505_800x600_fit_box_3.png width=226 height=74>
 </figure>
 <ul>
 <li>Give the new repository a memorable name</li>
@@ -175,11 +175,11 @@ Dave's blog
 <li>Click the big green button</li>
 </ul>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-211_hu3a0cda27f345812a38bd39a70b098fda_65452_800x600_fit_box_3.png width=543 height=600>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-211_hu3a0cda27f345812a38bd39a70b098fda_65452_800x600_fit_box_3.png width=543 height=600>
 </figure>
 <p>Once the repository is created, copy the https link from the code dialog;</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-34_huc2c8baea126ce48baf7bc2a6ec6f5e6f_37677_800x600_fit_box_3.png width=736 height=341>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-34_huc2c8baea126ce48baf7bc2a6ec6f5e6f_37677_800x600_fit_box_3.png width=736 height=341>
 </figure>
 <h2 id=microsoft-visual-studio-code>Microsoft Visual Studio Code</h2>
 <p>For development work I use Windows 10 with Microsoft Visual Studio Code. Depending on the use case I will either develop locally or will use a WSL deployment of Ubuntu. For this project I will just stick to local. Next task is to clone the repository we just created on GitHub using git.</p>
@@ -198,12 +198,12 @@ git clone https://github.com/daveihart/tf-davehart.co.uk-wordpress_.git
 </div>
 </div>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-52_huf76db7506b3b962b9415031d178ef3d8_62931_800x600_fit_box_3.png width=800 height=391>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-52_huf76db7506b3b962b9415031d178ef3d8_62931_800x600_fit_box_3.png width=800 height=391>
 </figure>
 <h2 id=terraform>Terraform</h2>
 <p>Now there are many ways to setup your Terraform project. I like to separate out the key sections into their own files. For this project I started with three files. You can deploy your HCL all in one file but I like to think of the possibility to expand on a project and it would be easier if you do all the groundwork from the start. This method will also make it easier to trawl through the code in smaller files should you encounter any issues.</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-61_hu159d0fa9b172096bc2dc69527612f6c6_3275_600x400_fit_box_3.png width=262 height=85>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-61_hu159d0fa9b172096bc2dc69527612f6c6_3275_600x400_fit_box_3.png width=262 height=85>
 </figure>
 <p>The variables file will hold any variables required for the deployment. Hopefully the optional descriptions added will be enough</p>
 <div class=highlight><div class=chroma>
@@ -724,40 +724,40 @@ resource &#34;aws_route53_record&#34; &#34;wordpress&#34; {
 <p>So we have already setup our GitHub repository, lets setup a new workspace on Terraform cloud to organise our infrastructure. I am not going to talk about setting up an account with Terraform cloud, just follow the <a href=https://www.terraform.io/>link</a> and create an account.</p>
 <p>Once logged into app.terraform.io, click</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-71_hu3a7f2de6133e328e7185595d99bded4a_1201_800x600_fit_box_3.png width=157 height=39>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-71_hu3a7f2de6133e328e7185595d99bded4a_1201_800x600_fit_box_3.png width=157 height=39>
 </figure>
 <p>Choose your workflow type, for this I am going to use the version control workspace. Your choice really</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-81_hu3358c8caa0012e2c9eadfab723b871a4_55684_800x600_fit_box_3.png width=697 height=600>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-81_hu3358c8caa0012e2c9eadfab723b871a4_55684_800x600_fit_box_3.png width=697 height=600>
 </figure>
 <p>I already have GiHub integrated with Terraform so I can just select that as my VCS. Steps <a href=https://www.terraform.io/docs/cloud/vcs/github-app.html>here</a> if you are interested.</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-100_hua4b635c32c767d988a5e529e8af6ba59_57873_800x600_fit_box_3.png width=756 height=600>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-100_hua4b635c32c767d988a5e529e8af6ba59_57873_800x600_fit_box_3.png width=756 height=600>
 </figure>
 <p>Once I select GitHub it will list all of my repositories. I have selected the one relating to this project</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-200_hua7a60f9504216142db1ad7a92a7d33d1_20909_800x600_fit_box_3.png width=624 height=271>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-200_hua7a60f9504216142db1ad7a92a7d33d1_20909_800x600_fit_box_3.png width=624 height=271>
 </figure>
 <p>Once you select the Workspace you have a few options. Define the workspace name and in advanced options you can define your VCS branch, Terrform working dir, Workspace name, etc.</p>
 <p>Click the button</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-110_hu5a573924d02492518cf79b726523daa0_1233_800x600_fit_box_3.png width=154 height=39>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-110_hu5a573924d02492518cf79b726523daa0_1233_800x600_fit_box_3.png width=154 height=39>
 </figure>
 <p>All goes well you will see a message like this,</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-120_hu33f851549e0eb8a4ce0ed5ee118d3398_12322_800x600_fit_box_3.png width=708 height=148>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-120_hu33f851549e0eb8a4ce0ed5ee118d3398_12322_800x600_fit_box_3.png width=708 height=148>
 </figure>
 <p>closely followed by</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-130_hu6a40f7876e1cd36152538a37da3c8f9d_17137_800x600_fit_box_3.png width=675 height=202>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-130_hu6a40f7876e1cd36152538a37da3c8f9d_17137_800x600_fit_box_3.png width=675 height=202>
 </figure>
 <p>For this deployment I created two environment variables (secret) to hold my AWS keys. The naming is important for the AWS provider to retrieve the correct values</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-140_hu4d8de3099e5736790dd20a03ff7d4a89_15990_800x600_fit_box_3.png width=650 height=221>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-140_hu4d8de3099e5736790dd20a03ff7d4a89_15990_800x600_fit_box_3.png width=650 height=221>
 </figure>
 <p>If we now jump back to our repository and look at the webhooks, we should see one for Terraform</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-150_hudcc2870f61e17425feebd955a5d6f0b8_40612_800x600_fit_box_3.png width=800 height=501>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-150_hudcc2870f61e17425feebd955a5d6f0b8_40612_800x600_fit_box_3.png width=800 height=501>
 </figure>
 <p>Integration complete.</p>
 <h2 id=are-we-there-yet>Are we there yet?</h2>
@@ -777,49 +777,49 @@ git push
 </div>
 </div>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-160_hu542b9b19faf0e68271ad1dffa554b4f3_36219_800x600_fit_box_3.png width=696 height=293>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-160_hu542b9b19faf0e68271ad1dffa554b4f3_36219_800x600_fit_box_3.png width=696 height=293>
 </figure>
 <p>Quick refresh on our GitHub repository</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-170_hu4e1f5dd357354ce4a49f0546f0444ae8_40847_800x600_fit_box_3.png width=800 height=392>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-170_hu4e1f5dd357354ce4a49f0546f0444ae8_40847_800x600_fit_box_3.png width=800 height=392>
 </figure>
 <p>Lets see what is happening over at Terraform&mldr;Nothing. I seem to have to kick off the first plan manually. Press</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-180_hud42b700527b0a3d726c7054fd6c9191d_1150_800x600_fit_box_3.png width=166 height=40>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-180_hud42b700527b0a3d726c7054fd6c9191d_1150_800x600_fit_box_3.png width=166 height=40>
 </figure>
 <p>Now this deployment gave me</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-190_hudaee5d6a7d4022956c3b9d5195441019_11071_800x600_fit_box_3.png width=800 height=63>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-190_hudaee5d6a7d4022956c3b9d5195441019_11071_800x600_fit_box_3.png width=800 height=63>
 </figure>
 <p>Good reason, I did not define valid environment variables as I have already deployed this and its where I am now writing this article :)</p>
 <p>When all the variables are correct and you have a successful run, you will see</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-210_hucae1380fb83b0ad8e8cb8f802c50bdc6_39219_800x600_fit_box_3.png width=800 height=393>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-210_hucae1380fb83b0ad8e8cb8f802c50bdc6_39219_800x600_fit_box_3.png width=800 height=393>
 </figure>
 <p>Your Terraform plans and state are all in Terraform cloud. If you want to tear it all down, navigate to settings, destruction and deletion and queue a destroy plan</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/terraform-aws-wordpress/image-220_hu8cec63d4bbb388b38a6ca64511d1eead_14781_800x600_fit_box_3.png width=642 height=176>
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-220_hu8cec63d4bbb388b38a6ca64511d1eead_14781_800x600_fit_box_3.png width=642 height=176>
 </figure>
 <p>I Hope you find this useful and maybe even considered dropping in again. Please take a look at <a href=/post/terraform-aws-and-wordpress-part-ii/>Part II</a> which will dig into some of the user_data and certbot. Great tool to allow you to automate external certificate registration and deployment.</p>
 </div>
 <footer class=post-footer>
 <div class=post-tags>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/apache/>apache</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/apache/>Apache</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/aws/>AWS</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/aws/>AWS</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/bash/>bash</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/blog/>Blog</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/hcl/>HCL</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/mysql/>MYSQL</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/shell/>shell</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/terraform/>Terraform</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/terraform/>Terraform</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/wordpress/>WordPress</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/wordpress/>WordPress</a>
+<a href=https://daveihart.co.uk/tags/apache/>apache</a>
+<a href=https://daveihart.co.uk/tags/apache/>Apache</a>
+<a href=https://daveihart.co.uk/tags/aws/>AWS</a>
+<a href=https://daveihart.co.uk/tags/aws/>AWS</a>
+<a href=https://daveihart.co.uk/tags/bash/>bash</a>
+<a href=https://daveihart.co.uk/tags/blog/>Blog</a>
+<a href=https://daveihart.co.uk/tags/hcl/>HCL</a>
+<a href=https://daveihart.co.uk/tags/mysql/>MYSQL</a>
+<a href=https://daveihart.co.uk/tags/shell/>shell</a>
+<a href=https://daveihart.co.uk/tags/terraform/>Terraform</a>
+<a href=https://daveihart.co.uk/tags/terraform/>Terraform</a>
+<a href=https://daveihart.co.uk/tags/wordpress/>WordPress</a>
+<a href=https://daveihart.co.uk/tags/wordpress/>WordPress</a>
 </div>
 <nav class=post-nav>
-<a class=prev href=/davehart.co.uk/post/terraform-aws-and-wordpress-part-ii/>
+<a class=prev href=/post/terraform-aws-and-wordpress-part-ii/>
 <i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18"><path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417l277.93508-310.326815c11.338233-12.190647 11.035334-32.285311-.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"/></svg>
 </i>
 <span class="prev-text nav-default">Terraform, AWS and WordPress – Part II</span>
@@ -835,11 +835,11 @@ git push
 <div class=icon-links>
 <a href=https://twitter.com/daveihart rel="me noopener" class=iconfont title=twitter target=_blank><svg class="icon" viewBox="0 0 1264 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M1229.8616 18.043658s-117.852626 63.135335-164.151872 67.344358C960.484169-78.763856 560.627046-7.210476 627.971403 308.466201 278.622548 312.675223 89.216542 47.506814 89.216542 47.506814S-28.636084 236.91282 164.978944 392.646647C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042 50.5082679999998-16.83609 134.688715-143.10676 134.688715-143.10676s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"/></svg>
 </a>
-<a href=https://twitter.com/daveihart rel="me noopener" class=iconfont title=linkedin target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="33" height="33"><path d="M872.405333 872.618667H720.768V635.008c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333.0-91.136 61.653333-91.136 125.397334v241.792H398.976V384H544.64v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667.0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667.0 01-88.021333-88.106666A88.064 88.064.0 11227.712 317.141333zm76.032 555.477334H151.68V384h152.064v488.618667zM948.266667.0h-872.704C33.792.0.0 33.024.0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667.0 948.138667.0h.128z"/></svg>
+<a href=https://www.linkedin.com/in/dave-hart/ rel="me noopener" class=iconfont title=linkedin target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="33" height="33"><path d="M872.405333 872.618667H720.768V635.008c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333.0-91.136 61.653333-91.136 125.397334v241.792H398.976V384H544.64v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667.0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667.0 01-88.021333-88.106666A88.064 88.064.0 11227.712 317.141333zm76.032 555.477334H151.68V384h152.064v488.618667zM948.266667.0h-872.704C33.792.0.0 33.024.0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667.0 948.138667.0h.128z"/></svg>
 </a>
 <a href=https://github.com/daveihart rel="me noopener" class=iconfont title=github target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M512 12.672c-282.88.0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667.0-12.16-.426667-44.373333-.64-87.04C242.005334 929.664 211.968 830.08 211.968 830.08 188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333.0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333.0.0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667.0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72.0 68.522667-.64 123.562667-.64 140.202666.0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"/></svg>
 </a>
-<a href=https://daveihart.github.io/davehart.co.uk/index.xml rel="noopener alternate" type=application/rss+xml class=iconfont title=rss target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30"><path d="M819.157333 1024C819.157333 574.592 449.408 204.8.0 204.8V0c561.706667.0 1024 462.293333 1024 1024H819.157333zM140.416 743.04a140.8 140.8.0 01140.501333 140.586667A140.928 140.928.0 01140.074667 1024C62.72 1024 0 961.109333.0 883.626667S62.933333 743.082667 140.416 743.04zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667v-199.04c372.352.0 678.784 306.517333 678.784 678.826667z"/></svg>
+<a href=https://daveihart.co.uk/index.xml rel="noopener alternate" type=application/rss+xml class=iconfont title=rss target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30"><path d="M819.157333 1024C819.157333 574.592 449.408 204.8.0 204.8V0c561.706667.0 1024 462.293333 1024 1024H819.157333zM140.416 743.04a140.8 140.8.0 01140.501333 140.586667A140.928 140.928.0 01140.074667 1024C62.72 1024 0 961.109333.0 883.626667S62.933333 743.082667 140.416 743.04zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667v-199.04c372.352.0 678.784 306.517333 678.784 678.826667z"/></svg>
 </a>
 </div>
 <div class=copyright>
@@ -867,11 +867,11 @@ Dave
 </i>
 </div>
 </div>
-<script type=text/javascript src=/davehart.co.uk/lib/jquery/jquery-3.2.1.min.js></script>
-<script type=text/javascript src=/davehart.co.uk/lib/slideout/slideout-1.0.1.min.js></script>
-<script type=text/javascript src=/davehart.co.uk/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin=anonymous></script>
-<script type=text/javascript src=/davehart.co.uk/js/load-photoswipe.js></script>
-<script type=text/javascript src=/davehart.co.uk/lib/photoswipe/photoswipe.min.js></script>
-<script type=text/javascript src=/davehart.co.uk/lib/photoswipe/photoswipe-ui-default.min.js></script>
+<script type=text/javascript src=/lib/jquery/jquery-3.2.1.min.js></script>
+<script type=text/javascript src=/lib/slideout/slideout-1.0.1.min.js></script>
+<script type=text/javascript src=/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin=anonymous></script>
+<script type=text/javascript src=/js/load-photoswipe.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe.min.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe-ui-default.min.js></script>
 </body>
 </html>

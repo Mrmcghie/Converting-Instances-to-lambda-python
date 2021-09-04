@@ -18,14 +18,14 @@
 Backup Last thing you want is to have thrown your heart and sole into a number of posts only for the EC2 instance to crash and you lose all that work.">
 <meta name=keywords content="Hugo,theme,jane">
 <meta name=generator content="Hugo 0.88.0">
-<link rel=canonical href=https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/>
-<link rel=icon href=/davehart.co.uk/favicon.ico>
-<link rel=stylesheet href=/davehart.co.uk/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css integrity="sha256-+ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media=screen crossorigin=anonymous>
+<link rel=canonical href=https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/>
+<link rel=icon href=/favicon.ico>
+<link rel=stylesheet href=/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css integrity="sha256-+ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media=screen crossorigin=anonymous>
 <meta property="og:title" content="Backups, monitoring and maintenance. Keep that blog alive!">
 <meta property="og:description" content="Our demo WordPress site (part 1 & part 2) is now hosting publicly available content (This page for example). You have written a number of posts, have a few in draft and finally found a theme you liked. What next? Lets discuss backup, swapfile, snapshots, monitoring and certificates.
 Backup Last thing you want is to have thrown your heart and sole into a number of posts only for the EC2 instance to crash and you lose all that work.">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/"><meta property="article:section" content="post">
+<meta property="og:url" content="https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/"><meta property="article:section" content="post">
 <meta property="article:published_time" content="2020-10-06T08:08:11+00:00">
 <meta property="article:modified_time" content="2020-10-06T08:08:11+00:00">
 <meta itemprop=name content="Backups, monitoring and maintenance. Keep that blog alive!">
@@ -42,7 +42,7 @@ Backup Last thing you want is to have thrown your heart and sole into a number o
 <body>
 <div id=mobile-navbar class=mobile-navbar>
 <div class=mobile-header-logo>
-<a href=/davehart.co.uk/ class=logo>Dave's blog</a>
+<a href=/ class=logo>Dave's blog</a>
 </div>
 <div class=mobile-navbar-icon>
 <span></span>
@@ -53,18 +53,18 @@ Backup Last thing you want is to have thrown your heart and sole into a number o
 <nav id=mobile-menu class="mobile-menu slideout-menu">
 <ul class=mobile-menu-list>
 <li class=mobile-menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/>Home</a>
+<a class=menu-item-link href=https://daveihart.co.uk/>Home</a>
 </li><li class=mobile-menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/post/>Posts</a>
+<a class=menu-item-link href=https://daveihart.co.uk/post/>Posts</a>
 </li><li class=mobile-menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/tags/>Tags</a>
+<a class=menu-item-link href=https://daveihart.co.uk/tags/>Tags</a>
 </li><li class=mobile-menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/about/about/>About</a>
+<a class=menu-item-link href=https://daveihart.co.uk/about/about/>About</a>
 </li>
 </ul>
 </nav>
-<link rel=stylesheet href=/davehart.co.uk/lib/photoswipe/photoswipe.min.css>
-<link rel=stylesheet href=/davehart.co.uk/lib/photoswipe/default-skin/default-skin.min.css>
+<link rel=stylesheet href=/lib/photoswipe/photoswipe.min.css>
+<link rel=stylesheet href=/lib/photoswipe/default-skin/default-skin.min.css>
 <div class=pswp tabindex=-1 role=dialog aria-hidden=true>
 <div class=pswp__bg></div>
 <div class=pswp__scroll-wrap>
@@ -103,23 +103,23 @@ Backup Last thing you want is to have thrown your heart and sole into a number o
 </div>
 <header id=header class="header container">
 <div class=logo-wrapper>
-<a href=/davehart.co.uk/ class=logo>
+<a href=/ class=logo>
 Dave's blog
 </a>
 </div>
 <nav class=site-navbar>
 <ul id=menu class=menu>
 <li class=menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/>Home</a>
+<a class=menu-item-link href=https://daveihart.co.uk/>Home</a>
 </li>
 <li class=menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/post/>Posts</a>
+<a class=menu-item-link href=https://daveihart.co.uk/post/>Posts</a>
 </li>
 <li class=menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/tags/>Tags</a>
+<a class=menu-item-link href=https://daveihart.co.uk/tags/>Tags</a>
 </li>
 <li class=menu-item>
-<a class=menu-item-link href=https://daveihart.github.io/davehart.co.uk/about/about/>About</a>
+<a class=menu-item-link href=https://daveihart.co.uk/about/about/>About</a>
 </li>
 </ul>
 </nav>
@@ -169,11 +169,11 @@ Dave's blog
 <h3 id=snapshot>Snapshot</h3>
 <p>As well as using the WordPress plugin I decided to keep snapshots in AWS. The rate of change on the instance will be minor so figured the snapshot will allow a pretty painless recovery. Worst case I compliment the snapshot with either the SQL or file backups from the plugin. AWS provide a snapshot lifecycle management capability which I will be using.</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+<img style=max-width:100%;width:auto;height:auto src=/post/backups-monitoring-and-maintenance-keep-that-blog-alive/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
 </figure>
 <p><strong><em>The majority of activities performed in the article can be performed using the AWS Console. I was once given a great suggestion to try and do everything from the command line interface (CLI). I have found you learn more this way so where possible this is the method I will use.</em></strong></p>
 <figure>
-<img sizes="(min-width: 35em) 1200px, 100vw" srcset src=https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image3.png>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset src=https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image3.png>
 </figure>
 <p>Within Lifecycle Management my preference was to define a snapshot every 24 hrs from 23:00. I will be retaining 14 days worth of snapshots.</p>
 <p>You can use a json input file for your lifecycle policy, this is the one I used.</p>
@@ -241,7 +241,7 @@ Dave's blog
 </div>
 </div>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+<img style=max-width:100%;width:auto;height:auto src=/post/backups-monitoring-and-maintenance-keep-that-blog-alive/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
 </figure>
 <p><strong><em>The default role &ldquo;AWSDataLifecycleManagerServiceRole&rdquo; will be created for AWS to manage the snapshots for you. If you have more restrictive requirements you can create your own role. Note that the person executing this CLI will also need dlm permissions.</em></strong></p>
 <p>So lets run the dlm command to create the policy reading in the json file</p>
@@ -269,12 +269,12 @@ Dave's blog
 </div>
 </div><p>We know we have been successful as we have been provided with a PolicyId. Lets take a quick look in the console to check.</p>
 <figure>
-<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-19_hu3c00e47c1cbc521bbf263301dc62876d_44392_480x0_resize_box_3.png 480w,
-https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-19_hu3c00e47c1cbc521bbf263301dc62876d_44392_800x0_resize_box_3.png 800w," src=https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-19_hu3c00e47c1cbc521bbf263301dc62876d_44392_800x0_resize_box_3.png>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-19_hu3c00e47c1cbc521bbf263301dc62876d_44392_480x0_resize_box_3.png 480w,
+https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-19_hu3c00e47c1cbc521bbf263301dc62876d_44392_800x0_resize_box_3.png 800w," src=https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-19_hu3c00e47c1cbc521bbf263301dc62876d_44392_800x0_resize_box_3.png>
 </figure>
 <figure>
-<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-22_hu75fa21777d5ebe50e3d2ca8b60a93867_40206_480x0_resize_box_3.png 480w,
-https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-22_hu75fa21777d5ebe50e3d2ca8b60a93867_40206_800x0_resize_box_3.png 800w," src=https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-22_hu75fa21777d5ebe50e3d2ca8b60a93867_40206_800x0_resize_box_3.png>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-22_hu75fa21777d5ebe50e3d2ca8b60a93867_40206_480x0_resize_box_3.png 480w,
+https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-22_hu75fa21777d5ebe50e3d2ca8b60a93867_40206_800x0_resize_box_3.png 800w," src=https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-22_hu75fa21777d5ebe50e3d2ca8b60a93867_40206_800x0_resize_box_3.png>
 </figure>
 <h2 id=sizing>Sizing</h2>
 <p>The terraform deployment was configured to use a t2-micro EC2 instance type. This only gives us 1vCPU, 1GB memory and an 8GB root volume. This is pretty small but I thought I would see how it goes.</p>
@@ -572,7 +572,7 @@ IMPORTANT NOTES:
 </div>
 </div>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+<img style=max-width:100%;width:auto;height:auto src=/post/backups-monitoring-and-maintenance-keep-that-blog-alive/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
 </figure>
 <p><strong><em>AWS Route 53 health check service is only available in us-east-1. So if you are alerting on Route53 metrics look for them in us-east-1 and any SNS topics for these alerts will need to be in the same region</em></strong></p>
 <p>First off lets setup our json input file we will use when creating the health check (create-health-check.json). Note that the regions relate to the geographic locations AWS will use to test your FQDN. You need a minimum of three.</p>
@@ -706,13 +706,13 @@ IMPORTANT NOTES:
 <p>Out of memory: Kill process 3923 (mysqld). Oh dear!</p>
 <p>If you recall, this is a very small EC2 instance (t2.micro) with only 1GB RAM. The first thing I though of was to check for a swap file</p>
 <figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+<img style=max-width:100%;width:auto;height:auto src=/post/backups-monitoring-and-maintenance-keep-that-blog-alive/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
 </figure>
 <p>A swap file (also known as virtual memory) contains temporary paged contents of RAM. This allows RAM to be used by other processes. In this instance we will be using the EBS volumes to host the swap file.</p>
 <p>Using the command &ldquo;free -m&rdquo; it was evident there was no swap file. Figured this would be the first step in troubleshooting this issue without throwing more RAM at the EC2 instance.</p>
 <figure>
-<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-32_hu8856654507342d50e48f1832f1be74e4_22005_480x0_resize_box_3.png 480w,
-https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-32_hu8856654507342d50e48f1832f1be74e4_22005_800x0_resize_box_3.png 800w," src=https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-32_hu8856654507342d50e48f1832f1be74e4_22005_800x0_resize_box_3.png>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-32_hu8856654507342d50e48f1832f1be74e4_22005_480x0_resize_box_3.png 480w,
+https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-32_hu8856654507342d50e48f1832f1be74e4_22005_800x0_resize_box_3.png 800w," src=https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-32_hu8856654507342d50e48f1832f1be74e4_22005_800x0_resize_box_3.png>
 </figure>
 <p>The recommendation from AWS</p>
 <p>As a general rule, calculate swap space according to the following:</p>
@@ -769,8 +769,8 @@ sudo swapon -s
 </div>
 </div>
 <figure>
-<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-42_hucc33a163b83bb31c9479bf08aedb268c_76771_480x0_resize_box_3.png 480w,
-https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-42_hucc33a163b83bb31c9479bf08aedb268c_76771_800x0_resize_box_3.png 800w," src=https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-42_hucc33a163b83bb31c9479bf08aedb268c_76771_800x0_resize_box_3.png>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-42_hucc33a163b83bb31c9479bf08aedb268c_76771_480x0_resize_box_3.png 480w,
+https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-42_hucc33a163b83bb31c9479bf08aedb268c_76771_800x0_resize_box_3.png 800w," src=https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-42_hucc33a163b83bb31c9479bf08aedb268c_76771_800x0_resize_box_3.png>
 </figure>
 <p>Once the above steps are complete you need to update the fstab to ensure the swap file is enabled at boot</p>
 <div class=highlight><div class=chroma>
@@ -794,7 +794,7 @@ sudo vi /etc/fstab
 </div>
 </div>
 <figure>
-<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-300_hu69fc01508033a278b9e48e84f4e3a6c4_13430_480x0_resize_box_3.png 480w," src=https://daveihart.github.io/davehart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-300.png>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-300_hu69fc01508033a278b9e48e84f4e3a6c4_13430_480x0_resize_box_3.png 480w," src=https://daveihart.co.uk/post/backups-monitoring-and-maintenance-keep-that-blog-alive/image-300.png>
 </figure>
 <h2 id=conclusion>Conclusion</h2>
 <p>So far so good. Server has been up for a good few weeks with no issues. I will update this page if any further updates are required.</p>
@@ -802,34 +802,34 @@ sudo vi /etc/fstab
 </div>
 <footer class=post-footer>
 <div class=post-tags>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/aws/>AWS</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/aws/>AWS</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/backup/>backup</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/blog/>Blog</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/certbot/>certbot</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/cli/>cli</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/dlm/>dlm</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/ebs/>ebs</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/healthcheck/>healthcheck</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/lsblk/>lsblk</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/mysql/>MYSQL</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/powershell/>PowerShell</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/route53/>route53</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/snapshot/>snapshot</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/sns/>sns</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/ssl/>ssl</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/swapfile/>swapfile</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/wordpress/>WordPress</a>
-<a href=https://daveihart.github.io/davehart.co.uk/tags/wordpress/>WordPress</a>
+<a href=https://daveihart.co.uk/tags/aws/>AWS</a>
+<a href=https://daveihart.co.uk/tags/aws/>AWS</a>
+<a href=https://daveihart.co.uk/tags/backup/>backup</a>
+<a href=https://daveihart.co.uk/tags/blog/>Blog</a>
+<a href=https://daveihart.co.uk/tags/certbot/>certbot</a>
+<a href=https://daveihart.co.uk/tags/cli/>cli</a>
+<a href=https://daveihart.co.uk/tags/dlm/>dlm</a>
+<a href=https://daveihart.co.uk/tags/ebs/>ebs</a>
+<a href=https://daveihart.co.uk/tags/healthcheck/>healthcheck</a>
+<a href=https://daveihart.co.uk/tags/lsblk/>lsblk</a>
+<a href=https://daveihart.co.uk/tags/mysql/>MYSQL</a>
+<a href=https://daveihart.co.uk/tags/powershell/>PowerShell</a>
+<a href=https://daveihart.co.uk/tags/route53/>route53</a>
+<a href=https://daveihart.co.uk/tags/snapshot/>snapshot</a>
+<a href=https://daveihart.co.uk/tags/sns/>sns</a>
+<a href=https://daveihart.co.uk/tags/ssl/>ssl</a>
+<a href=https://daveihart.co.uk/tags/swapfile/>swapfile</a>
+<a href=https://daveihart.co.uk/tags/wordpress/>WordPress</a>
+<a href=https://daveihart.co.uk/tags/wordpress/>WordPress</a>
 </div>
 <nav class=post-nav>
-<a class=prev href=/davehart.co.uk/post/encrypting-ebs-volumes-programmatically-python/>
+<a class=prev href=/post/encrypting-ebs-volumes-programmatically-python/>
 <i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18"><path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417l277.93508-310.326815c11.338233-12.190647 11.035334-32.285311-.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"/></svg>
 </i>
 <span class="prev-text nav-default">Encrypting EBS volumes programmatically with python</span>
 <span class="prev-text nav-mobile">Prev</span>
 </a>
-<a class=next href=/davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/>
+<a class=next href=/post/ec2-inventory-using-aws-lambda-and-python/>
 <span class="next-text nav-default">EC2 inventory using AWS Lambda and Python</span>
 <span class="prev-text nav-mobile">Next</span>
 <i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18"><path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697c-11.777231-11.500939-30.216186-10.304694-41.178865 2.712784z"/></svg>
@@ -845,11 +845,11 @@ sudo vi /etc/fstab
 <div class=icon-links>
 <a href=https://twitter.com/daveihart rel="me noopener" class=iconfont title=twitter target=_blank><svg class="icon" viewBox="0 0 1264 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M1229.8616 18.043658s-117.852626 63.135335-164.151872 67.344358C960.484169-78.763856 560.627046-7.210476 627.971403 308.466201 278.622548 312.675223 89.216542 47.506814 89.216542 47.506814S-28.636084 236.91282 164.978944 392.646647C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042 50.5082679999998-16.83609 134.688715-143.10676 134.688715-143.10676s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"/></svg>
 </a>
-<a href=https://twitter.com/daveihart rel="me noopener" class=iconfont title=linkedin target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="33" height="33"><path d="M872.405333 872.618667H720.768V635.008c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333.0-91.136 61.653333-91.136 125.397334v241.792H398.976V384H544.64v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667.0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667.0 01-88.021333-88.106666A88.064 88.064.0 11227.712 317.141333zm76.032 555.477334H151.68V384h152.064v488.618667zM948.266667.0h-872.704C33.792.0.0 33.024.0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667.0 948.138667.0h.128z"/></svg>
+<a href=https://www.linkedin.com/in/dave-hart/ rel="me noopener" class=iconfont title=linkedin target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="33" height="33"><path d="M872.405333 872.618667H720.768V635.008c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333.0-91.136 61.653333-91.136 125.397334v241.792H398.976V384H544.64v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667.0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667.0 01-88.021333-88.106666A88.064 88.064.0 11227.712 317.141333zm76.032 555.477334H151.68V384h152.064v488.618667zM948.266667.0h-872.704C33.792.0.0 33.024.0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667.0 948.138667.0h.128z"/></svg>
 </a>
 <a href=https://github.com/daveihart rel="me noopener" class=iconfont title=github target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M512 12.672c-282.88.0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667.0-12.16-.426667-44.373333-.64-87.04C242.005334 929.664 211.968 830.08 211.968 830.08 188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333.0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333.0.0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667.0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72.0 68.522667-.64 123.562667-.64 140.202666.0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"/></svg>
 </a>
-<a href=https://daveihart.github.io/davehart.co.uk/index.xml rel="noopener alternate" type=application/rss+xml class=iconfont title=rss target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30"><path d="M819.157333 1024C819.157333 574.592 449.408 204.8.0 204.8V0c561.706667.0 1024 462.293333 1024 1024H819.157333zM140.416 743.04a140.8 140.8.0 01140.501333 140.586667A140.928 140.928.0 01140.074667 1024C62.72 1024 0 961.109333.0 883.626667S62.933333 743.082667 140.416 743.04zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667v-199.04c372.352.0 678.784 306.517333 678.784 678.826667z"/></svg>
+<a href=https://daveihart.co.uk/index.xml rel="noopener alternate" type=application/rss+xml class=iconfont title=rss target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30"><path d="M819.157333 1024C819.157333 574.592 449.408 204.8.0 204.8V0c561.706667.0 1024 462.293333 1024 1024H819.157333zM140.416 743.04a140.8 140.8.0 01140.501333 140.586667A140.928 140.928.0 01140.074667 1024C62.72 1024 0 961.109333.0 883.626667S62.933333 743.082667 140.416 743.04zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667v-199.04c372.352.0 678.784 306.517333 678.784 678.826667z"/></svg>
 </a>
 </div>
 <div class=copyright>
@@ -877,11 +877,11 @@ Dave
 </i>
 </div>
 </div>
-<script type=text/javascript src=/davehart.co.uk/lib/jquery/jquery-3.2.1.min.js></script>
-<script type=text/javascript src=/davehart.co.uk/lib/slideout/slideout-1.0.1.min.js></script>
-<script type=text/javascript src=/davehart.co.uk/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin=anonymous></script>
-<script type=text/javascript src=/davehart.co.uk/js/load-photoswipe.js></script>
-<script type=text/javascript src=/davehart.co.uk/lib/photoswipe/photoswipe.min.js></script>
-<script type=text/javascript src=/davehart.co.uk/lib/photoswipe/photoswipe-ui-default.min.js></script>
+<script type=text/javascript src=/lib/jquery/jquery-3.2.1.min.js></script>
+<script type=text/javascript src=/lib/slideout/slideout-1.0.1.min.js></script>
+<script type=text/javascript src=/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin=anonymous></script>
+<script type=text/javascript src=/js/load-photoswipe.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe.min.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe-ui-default.min.js></script>
 </body>
 </html>
