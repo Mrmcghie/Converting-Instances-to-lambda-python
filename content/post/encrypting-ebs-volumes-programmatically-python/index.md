@@ -1,7 +1,7 @@
 ---
 title: 'Encrypting EBS volumes programmatically with python'
 date: Mon, 26 Oct 2020 18:42:52 +0000
-draft: false
+draft: true
 tags: ['AWS', 'AWS', 'Blog', 'ebs', 'encryption', 'GitHub', 'GitHub', 'python', 'python']
 author: "Dave"
 toc: true
@@ -12,14 +12,14 @@ Encrypting attached AWS EBS volume involves a number of steps. This article will
 
 Let's set the scene, you have an environment hosting a number of AWS EC2 instances and now security have said, "Hey, these EBS volumes should be encrypted!" No argument from me. So how do we go about this programmatically.
 
-![](https://davehart.co.uk/wp-content/uploads/2020/09/information-1015297_1280-1024x1024.jpg)
+{{< imgproc info Resize "100x" >}}
 
-You can enable default volume encryption in the management console. Check this [link](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default) out on how to do it. It was not always there hence the need for this process.
+_**You can enable default volume encryption in the management console. Check this [link](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default) out on how to do it. It was not always there hence the need for this process.**_
 
 A word on reuse of code
 -----------------------
 
-Just popping this in as if you looked at my article on [terminating EC2 instances by tag](https://davehart.co.uk/index.php/2020/09/25/terminate-ec2-instance-by-tag-using-python/), you will notice there is a fair bit of code reused here. A phrase I hear quite a lot over the years is 'let's not re-invent the wheel!' So whilst this is fantastic advice, it sometimes takes longer finding where the wheel was last left! In my own development work I found that sometimes I could not find a snippet of code I once used. Thankfully these days we have things like online git repositories.
+Just popping this in as if you looked at my article on [terminating EC2 instances by tag](/post/terraform-aws-and-wordpress-part-ii/), you will notice there is a fair bit of code reused here. A phrase I hear quite a lot over the years is 'let's not re-invent the wheel!' So whilst this is fantastic advice, it sometimes takes longer finding where the wheel was last left! In my own development work I found that sometimes I could not find a snippet of code I once used. Thankfully these days we have things like online git repositories.
 
 Getting back on topic....
 
@@ -45,7 +45,7 @@ The example in this guide uses the AWS accounts default EBS encryption key. Shou
 
 The image below shows the default (AWS Managed) ebs encryption key.
 
-![](https://davehart.co.uk/wp-content/uploads/2020/10/image-5.png)
+{{< figure src="image-51.png" >}}
 
 Process Flow
 ------------
@@ -56,13 +56,13 @@ We already have a feel for the steps involved listed in the method section above
 
 ### Flowchart - Full
 
-![](https://davehart.co.uk/wp-content/uploads/2020/09/ec2-terminate-flow-849x1024.png)
+{{< figure src="ec2-terminate-flow.png" >}}
 
-You will notice this is the same flow diagram used in the article [Terminate EC2 instance by tag](https://davehart.co.uk/index.php/2020/09/25/terminate-ec2-instance-by-tag-using-python/) . The flow will be the same, the "Process Instances" procedure is where are the interesting stuff with be done. Let's dive into that process
+You will notice this is the same flow diagram used in the article [Terminate EC2 instance by tag](/post/encrypting-ebs-volumes-programmatically-python/) . The flow will be the same, the "Process Instances" procedure is where are the interesting stuff with be done. Let's dive into that process
 
 ### Flowchart - Process Instances
 
-![](https://davehart.co.uk/wp-content/uploads/2020/10/ebs_encryption_detailed_flow-1024x823.jpeg)
+{{< figure src="ebs_encryption_detailed_flow.jpeg" >}}
 
 As you can see, not a straightforward process.
 
@@ -75,7 +75,7 @@ Similar to my previous scripts we break it down into functions. I will also incl
 
 This first block of code is setting the scene by **_importing_** libraries or only parts of a library by using **_from_**.
 
-```
+```python
 #!/usr/bin/env python3.8
 import botocore
 import boto3
@@ -92,13 +92,13 @@ dtstr=dt.strftime("%Y-%m-%d")
 
 These are the variables we can use in any CD package
 
-```
-search\_tag = "some\_key\_name" # Tag to search for instances
-search\_value = "some\_key\_value"  #value in tag to search for instances 
-snap\_prefix = dtstr+"-post\_encryption-snapshot" #snapshot description
+```python
+search_tag = "some_key_name" # Tag to search for instances
+search_value = "some_key_value"  #value in tag to search for instances 
+snap_prefix = dtstr+"-post_encryption-snapshot" #snapshot description
 arole="AddARoleHere" #role to assume across accounts
-accounts = \['AWS Accounts Here', 'Another AWS Account here'\] # list of accounts e.g \['0000000000000','1111111111111','2222222222222222','333333333333333333'\]
-total\_acc = len(accounts)
+accounts = ['AWS Accounts Here', 'Another AWS Account here'] # list of accounts e.g ['0000000000000','1111111111111','2222222222222222','333333333333333333']
+total_acc = len(accounts)
 region = "eu-west-2"
 verbose = True #False will suppress most of the output
 ```
@@ -110,7 +110,7 @@ Functions
 
 This is the function which ties it all together. It handles the calls to the other functions.
 
-```
+```python
 def main():
     global ec2
     global instances
@@ -119,46 +119,46 @@ def main():
     global inst
     global FailedIid
     global SuccessIid
-    processing\_acc = 0
-    FailedIid = \[\]
-    SuccessIid = \[\]
+    processing_acc = 0
+    FailedIid = []
+    SuccessIid = []
     client = boto3.client("sts")
-    account\_id = client.get\_caller\_identity()\["Account"\]
+    account_id = client.get_caller_identity()["Account"]
     if verbose:
-        print(f"script is executing in {account\_id}")
+        print(f"script is executing in {account_id}")
     for acc in accounts:
-        processing\_acc += 1
+        processing_acc += 1
         if verbose:
-            print(f"Processing account : {processing\_acc}")
-        if acc != account\_id:
-            assume\_roles(acc,accounts,arole)
-            ec2 = boto3.client('ec2',aws\_access\_key\_id=acc\_key,aws\_secret\_access\_key=sec\_key,aws\_session\_token=sess\_tok,region\_name='eu-west-1')
+            print(f"Processing account : {processing_acc}")
+        if acc != account_id:
+            assume_roles(acc,accounts,arole)
+            ec2 = boto3.client('ec2',aws_access_key_id=acc_key,aws_secret_access_key=sec_key,aws_session_token=sess_tok,region_name='eu-west-1')
         else:
             if verbose:
                 print(f"Execution account, no assume required")
             ec2=boto3.client('ec2')
-        instances = get\_instances(processing\_acc)
+        instances = get_instances(processing_acc)
         for inst in instances:
             try:
                 az=inst.get("Placement")
                 az2=az.get("AvailabilityZone")
-                Iid = \[\]
+                Iid = []
                 Iid.append(inst.get('InstanceId'))
                 #The for and first if can be removed, used to retrieve the name tag for verbose output
                 for tags in inst.get('Tags'):
-                    if tags\["Key"\] == 'Name':
-                        Iname = tags\["Value"\]
-                        process\_instance(Iname)
+                    if tags["Key"] == 'Name':
+                        Iname = tags["Value"]
+                        process_instance(Iname)
                 print("-------------------------------------------------------------------------")
             except botocore.exceptions.ClientError as er:
                 print("error on main")
-                print(er.response\['Error'\]\['Message'\])
-                FailedIid.append(Iid\[0\])
+                print(er.response['Error']['Message'])
+                FailedIid.append(Iid[0])
                 continue
     print(f"Errors encountered with these instances: {FailedIid}")
     print(f"Successfully processed these instances: {SuccessIid}")
 
-if \_\_name\_\_ == "\_\_main\_\_":
+if __name__ == "__main__":
     main()
 ```
 
@@ -168,36 +168,36 @@ This is exactly the same as my reference script. Roles are good. Use roles! Bit 
 
 If the AWS account being processed is not the AWS account the script is being executed from, you will need to assume a role defined in the target account. The role will have to have sufficient access to perform the necessary EC2 operations. In the source AWS account the instance, person or service performing the execution will need access to use the AWS Security Token Service (STS). AWS STS will grant temporary short lived credentials to perform the necessary activities. This is the recommended approach and removed the need to have credentials stored in code.
 
-```
-def assume\_roles(acc,accounts,arole):
-    global acc\_key
-    global sec\_key
-    global sess\_tok
+```python
+def assume_roles(acc,accounts,arole):
+    global acc_key
+    global sec_key
+    global sess_tok
     global client
-    sts\_conn = boto3.client('sts')
-    tmp\_arn = f"{acc}:role/{arole}"
-    response = sts\_conn.assume\_role(DurationSeconds=900,RoleArn=f"arn:aws:iam::{tmp\_arn}",RoleSessionName='Test')
-    acc\_key = response\['Credentials'\]\['AccessKeyId'\]
-    sec\_key = response\['Credentials'\]\['SecretAccessKey'\]
-    sess\_tok = response\['Credentials'\]\['SessionToken'\]
+    sts_conn = boto3.client('sts')
+    tmp_arn = f"{acc}:role/{arole}"
+    response = sts_conn.assume_role(DurationSeconds=900,RoleArn=f"arn:aws:iam::{tmp_arn}",RoleSessionName='Test')
+    acc_key = response['Credentials']['AccessKeyId']
+    sec_key = response['Credentials']['SecretAccessKey']
+    sess_tok = response['Credentials']['SessionToken']
 ```
 
 ### **get\_instances**
 
-Another blatant re-use, handy this ;) Once you have worked out the AWS account security settings , you can start retrieving the EC2 instances for processing. The EC2 instances retrieved are filtered to only retrieve instances matching the search\_tag and search\_value. These are then added to a list for further processing.
+Another blatant re-use, handy this ;) Once you have worked out the AWS account security settings , you can start retrieving the EC2 instances for processing. The EC2 instances retrieved are filtered to only retrieve instances matching the **search_tag** and **search_value**. These are then added to a list for further processing.
 
-```
-def get\_instances(process\_acc,filters=\[{'Name': 'tag:'+search\_tag, 'Values': \[search\_value\]}\]):
+```python
+def get\instances(process_acc,filters=[{'Name': 'tag:'+search_tag, 'Values': [search_value]}]):
     reservations = {}
     try:
-        reservations = ec2.describe\_instances(
+        reservations = ec2.describe_instances(
             Filters=filters
         )
     except botocore.exceptions.ClientError as e:
-        print(e.response\['Error'\]\['Message'\])
-    instances = \[\]
-    for reservation in reservations.get('Reservations', \[\]):
-        for instance in reservation.get('Instances', \[\]):
+        print(e.response['Error']['Message'])
+    instances = []
+    for reservation in reservations.get('Reservations', []):
+        for instance in reservation.get('Instances', []):
             instances.append(instance)
     return instances 
 ```

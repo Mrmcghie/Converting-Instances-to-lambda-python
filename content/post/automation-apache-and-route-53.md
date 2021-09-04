@@ -1,7 +1,7 @@
 ---
 title: 'Automation: Apache and Route 53'
 date: Fri, 15 Jan 2021 16:04:10 +0000
-draft: false
+draft: true
 tags: ['Amazon Linux', 'apache', 'Apache', 'AWS', 'AWS', 'Blog', 'cli', 'cli', 'GitHub', 'linux', 'route53', 'shell', 'shellscript']
 author: "Dave"
 toc: true

@@ -5,10 +5,11 @@ draft: false
 menu: "main"
 weight: 50
 ---
-
-![](https://davehart.co.uk/wp-content/uploads/2020/09/20190514_142955-2-279x300.jpg)
+{{< imgproc me Resize "300x" >}}
 
 Hi, I am Dave and this is a my bio. I have 25+ years experience working in the IT field. I started off building PC's and developed from there. I have been a Desktop support engineer, SME (Many technologies), performed data centre migrations, infrastructure architect and most recently DevOps engineer and cloud architect. The last 5 years or so I have been working in the cloud space. Here I have performed Active Directory extensions from on-premise into Azure and AWS (design and implementation), design work, security, automation and a lot of coding.
+
+My current role as devops lead involves deploying infrastructure across AWS and heavy use of kubernetes. This involves helm and helmfile deployments.
 
 My skills were originally focused around the Microsoft product set, the cloud and customer demand has pushed me into developing skills in Linux and numerous coding and automation products, either cloud native or open source products.
 
