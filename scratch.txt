@@ -1,0 +1,25 @@
+Add to summary page to include featured_image
+
+<img{{ with .Params.featured_image }} src="{{ . }}"{{ end }} alt="{{ .Title }}">
+
+
+
+
+
+config.toml
+themes/jane (modified content)
+
+{{< imgproc info Resize "100x" >}}
+
+{{< figure src="ec2-terminate-flow.png" >}}
+
+[Part II](/post/terraform-aws-and-wordpress-part-ii/)
+
+author: "Dave"
+toc: true
+featured_image: "image/python-aws-lambda-ec2-report.png"
+
+
+
+old way 
+![](https://davehart.co.uk/wp-content/uploads/2020/09/information-1015297_1280-1024x1024.jpg)
