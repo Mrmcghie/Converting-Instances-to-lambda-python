@@ -1,7 +1,7 @@
 ---
 title: 'EC2 inventory using AWS Lambda and Python'
 date: Mon, 05 Oct 2020 07:25:24 +0000
-draft: false
+draft: true
 tags: ['AWS', 'AWS', 'AWS Lambda', 'Blog', 'lambda', 'python', 'python', 'S3']
 author: "Dave"
 toc: true
