@@ -1,2 +1,2 @@
 User-agent: *
-Sitemap: https://davehart.co.uk/sitemap.xml
+Sitemap: https://daveihart.github.io/davehart.co.uk/sitemap.xml
