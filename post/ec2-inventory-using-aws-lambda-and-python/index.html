@@ -1,0 +1,872 @@
+<!doctype html><html lang=en itemscope itemtype=http://schema.org/WebPage>
+<head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<title>EC2 inventory using AWS Lambda and Python - Dave's DevOps blog</title>
+<meta name=renderer content="webkit">
+<meta name=viewport content="width=device-width,initial-scale=1,user-scalable=yes">
+<meta name=MobileOptimized content="width">
+<meta name=HandheldFriendly content="true">
+<meta name=applicable-device content="pc,mobile">
+<meta name=theme-color content="#f8f5ec">
+<meta name=msapplication-navbutton-color content="#f8f5ec">
+<meta name=apple-mobile-web-app-capable content="yes">
+<meta name=apple-mobile-web-app-status-bar-style content="#f8f5ec">
+<meta name=mobile-web-app-capable content="yes">
+<meta name=author content="Dave">
+<meta name=description content="A long while back I wrote a PowerShell script to produce a CSV file of EC2 instances across multiple accounts. The original PowerShell script was running on a Windows server as a scheduled task, oh how we have moved on. About 6 months ago I rewrote the script in Python and then moved it over to AWS Lambda. This was my first really opportunity to use AWS Lambda to execute code in a (Misnomer alert!!) serverless compute service.">
+<meta name=keywords content="Hugo,theme,jane">
+<meta name=generator content="Hugo 0.88.0">
+<link rel=canonical href=https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/>
+<link rel=icon href=/favicon.ico>
+<link rel=stylesheet href=/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css integrity="sha256-+ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media=screen crossorigin=anonymous>
+<meta property="og:title" content="EC2 inventory using AWS Lambda and Python">
+<meta property="og:description" content="A long while back I wrote a PowerShell script to produce a CSV file of EC2 instances across multiple accounts. The original PowerShell script was running on a Windows server as a scheduled task, oh how we have moved on. About 6 months ago I rewrote the script in Python and then moved it over to AWS Lambda. This was my first really opportunity to use AWS Lambda to execute code in a (Misnomer alert!!) serverless compute service.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/"><meta property="article:section" content="post">
+<meta property="article:published_time" content="2020-10-05T07:25:24+00:00">
+<meta property="article:modified_time" content="2020-10-05T07:25:24+00:00">
+<meta itemprop=name content="EC2 inventory using AWS Lambda and Python">
+<meta itemprop=description content="A long while back I wrote a PowerShell script to produce a CSV file of EC2 instances across multiple accounts. The original PowerShell script was running on a Windows server as a scheduled task, oh how we have moved on. About 6 months ago I rewrote the script in Python and then moved it over to AWS Lambda. This was my first really opportunity to use AWS Lambda to execute code in a (Misnomer alert!!) serverless compute service."><meta itemprop=datePublished content="2020-10-05T07:25:24+00:00">
+<meta itemprop=dateModified content="2020-10-05T07:25:24+00:00">
+<meta itemprop=wordCount content="1930">
+<meta itemprop=keywords content="AWS,AWS,AWS Lambda,Blog,lambda,python,python,S3,"><meta name=twitter:card content="summary">
+<meta name=twitter:title content="EC2 inventory using AWS Lambda and Python">
+<meta name=twitter:description content="A long while back I wrote a PowerShell script to produce a CSV file of EC2 instances across multiple accounts. The original PowerShell script was running on a Windows server as a scheduled task, oh how we have moved on. About 6 months ago I rewrote the script in Python and then moved it over to AWS Lambda. This was my first really opportunity to use AWS Lambda to execute code in a (Misnomer alert!!) serverless compute service."><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script>
+<script src=https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js></script><![endif]-->
+</head>
+<body>
+<div id=mobile-navbar class=mobile-navbar>
+<div class=mobile-header-logo>
+<a href=/ class=logo>Dave's blog</a>
+</div>
+<div class=mobile-navbar-icon>
+<span></span>
+<span></span>
+<span></span>
+</div>
+</div>
+<nav id=mobile-menu class="mobile-menu slideout-menu">
+<ul class=mobile-menu-list>
+<li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/>Home</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/post/>Posts</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/tags/>Tags</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/about/about/>About</a>
+</li>
+</ul>
+</nav>
+<link rel=stylesheet href=/lib/photoswipe/photoswipe.min.css>
+<link rel=stylesheet href=/lib/photoswipe/default-skin/default-skin.min.css>
+<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div>
+<div class=pswp__scroll-wrap>
+<div class=pswp__container>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+</div>
+<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__top-bar>
+<div class=pswp__counter></div>
+<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+<div class=pswp__preloader>
+<div class=pswp__preloader__icn>
+<div class=pswp__preloader__cut>
+<div class=pswp__preloader__donut></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div>
+</div>
+<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+</button>
+<div class=pswp__caption>
+<div class=pswp__caption__center></div>
+</div>
+</div>
+</div>
+</div>
+<header id=header class="header container">
+<div class=logo-wrapper>
+<a href=/ class=logo>
+Dave's blog
+</a>
+</div>
+<nav class=site-navbar>
+<ul id=menu class=menu>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/>Home</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/post/>Posts</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/tags/>Tags</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/about/about/>About</a>
+</li>
+</ul>
+</nav>
+</header>
+<div id=mobile-panel>
+<main id=main class="main bg-llight">
+<div class=content-wrapper>
+<div id=content class="content container">
+<article class="post bg-white">
+<header class=post-header>
+<h1 class=post-title>EC2 inventory using AWS Lambda and Python</h1>
+<div class=post-meta>
+<time datetime=2020-10-05 class=post-time>
+2020-10-05
+</time>
+<span class=more-meta> 1930 words </span>
+<span class=more-meta> 10 min read </span>
+</div>
+</header>
+<div class=post-toc id=post-toc>
+<h2 class=post-toc-title>Table of Contents</h2>
+<div class=post-toc-content>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#aws-services>AWS Services</a></li>
+<li><a href=#output-example>Output example</a></li>
+<li><a href=#input>Input</a>
+<ul>
+<li></li>
+</ul>
+</li>
+<li><a href=#flow-chart>Flow Chart</a></li>
+<li><a href=#code-construct>Code construct</a>
+<ul>
+<li><a href=#imports>Imports</a></li>
+<li><a href=#variables>Variables</a></li>
+</ul>
+</li>
+<li><a href=#functions>Functions</a></li>
+<li><a href=#assume_roles>assume_roles</a>
+<ul>
+<li><a href=#get_instances>get_instances</a></li>
+<li><a href=#formatted_report>formatted_report</a></li>
+<li><a href=#report_writer>report_writer</a></li>
+<li><a href=#lambda_handler>lambda_handler</a></li>
+</ul>
+</li>
+<li><a href=#security>Security</a>
+<ul>
+<li><a href=#script-execution>Script execution</a></li>
+<li><a href=#httpsgithubcomdaveihartpython-aws-lambda-ec2_reporterblobmasterreadmemds3-considerationss3-access><a href=https://github.com/daveihart/python-aws-lambda-ec2_reporter/blob/master/README.md#s3-considerations></a>S3 access</a></li>
+<li><a href=#s3-considerations>S3 considerations</a></li>
+</ul>
+</li>
+<li><a href=#trigger--amazon-eventbridge-event>Trigger : Amazon EventBridge event</a>
+<ul>
+<li></li>
+</ul>
+</li>
+<li><a href=#planned-enhancements>Planned enhancements</a></li>
+<li><a href=#conclusion>Conclusion</a></li>
+</ul>
+</nav>
+</div>
+</div>
+<div class=post-content>
+<p>A long while back I wrote a PowerShell script to produce a CSV file of EC2 instances across multiple accounts. The original PowerShell script was running on a Windows server as a scheduled task, oh how we have moved on. About 6 months ago I rewrote the script in Python and then moved it over to AWS Lambda. This was my first really opportunity to use AWS Lambda to execute code in a (Misnomer alert!!) <strong>serverless</strong> compute service.</p>
+<h2 id=aws-services>AWS Services</h2>
+<p>The full process makes use of a number of AWS services.</p>
+<ul>
+<li>AWS Lambda for the code execution</li>
+<li>AWS S3 as storage for the output CSV</li>
+</ul>
+<h2 id=output-example>Output example</h2>
+<p>The report produces a CSV file similar to the below screenshot.</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/image-27_hu018e3012f8d2f014e53a44a34c872075_109335_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/image-27_hu018e3012f8d2f014e53a44a34c872075_109335_800x0_resize_box_3.png 800w,
+https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/image-27_hu018e3012f8d2f014e53a44a34c872075_109335_1200x0_resize_box_3.png 1200w," src=https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/image-27_hu018e3012f8d2f014e53a44a34c872075_109335_800x0_resize_box_3.png>
+</figure>
+<h2 id=input>Input</h2>
+<p>The output CSV file is constructed using input variables provided as variables to AWS Lambda. Define the attributes and tags and accounts you wish to include in the report in the AWS Lambda console page.</p>
+<h4 id=lambda-environment-variables>Lambda Environment variables</h4>
+<p>To ensure the code can easily be re-used, all the key elements are variables. These can then be updated by anyone without having to get involved in the coding side. e.g. adding a new account or tag can easily be done by updating the comma separated list for the item within the Lambda environment variables.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>arole</td>
+<td>role name to assume</td>
+</tr>
+<tr>
+<td>attributes</td>
+<td><strong>(comma separated list)</strong> e.g. OwnerId,InstanceId,InstanceType</td>
+</tr>
+<tr>
+<td>tags</td>
+<td><strong>(comma separated list)</strong> e.g. Name,Project,Release,Environment,CostCentre</td>
+</tr>
+<tr>
+<td>aws_accounts</td>
+<td><strong>(comma separated list)</strong> e.g. 1111111111111,2222222222222,3333333333333</td>
+</tr>
+<tr>
+<td>bucket_name</td>
+<td>name of bucket e.g. reporting_test_bucket</td>
+</tr>
+<tr>
+<td>output_path</td>
+<td>folder within the bucket where the report will be held. E.g. ec2_reports</td>
+</tr>
+</tbody>
+</table>
+<h2 id=flow-chart>Flow Chart</h2>
+<p>This is what the process flow looks like</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/ec2-reporting-flow_hu8583f874a7889e91b19a98f0432f7784_25438_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/ec2-reporting-flow_hu8583f874a7889e91b19a98f0432f7784_25438_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/ec2-reporting-flow_hu8583f874a7889e91b19a98f0432f7784_25438_800x0_resize_box_3.png>
+</figure>
+<h2 id=code-construct>Code construct</h2>
+<p>Lets take a look at the code before we move into how its all executed</p>
+<h3 id=imports>Imports</h3>
+<p>Import all of the required external libraries. The ones we are using are all already available in Lambda so no library additions are required.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>import boto3
+import csv
+import os
+import botocore
+from datetime import date
+</code></pre></td></tr></table>
+</div>
+</div><h3 id=variables>Variables</h3>
+<p>The in-code variables have been setup to read from AWS Lambda environment variables. The variables prefixed with os.environ are retrieving the environment variables from the server (the serverless one 😄 )</p>
+<p>Any hard coded variables are there as I have not yet updated the code to process the options so they are not configurable at this point. For example the report_format from my initial Python code handles &ldquo;formatted&rdquo; (used in this code) and also &ldquo;RAW&rdquo; which dumps all values from the instances. That will follow on at some point. It was requested by someone but I never really liked the output, messy.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=c1>#temporary location for processing</span>
+<span class=n>output_file</span><span class=o>=</span><span class=s2>&#34;/tmp/temp.csv&#34;</span>
+<span class=n>output_path</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span><span class=p>[</span><span class=s1>&#39;output_path&#39;</span><span class=p>]</span>
+<span class=n>report_format</span> <span class=o>=</span> <span class=s2>&#34;formatted&#34;</span>
+<span class=n>accounts_list</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span><span class=p>[</span><span class=s1>&#39;aws_accounts&#39;</span><span class=p>]</span>
+<span class=n>accounts</span> <span class=o>=</span> <span class=n>accounts_list</span><span class=o>.</span><span class=n>split</span><span class=p>(</span><span class=s2>&#34;,&#34;</span><span class=p>)</span>
+<span class=n>arole</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span><span class=p>[</span><span class=s1>&#39;arole&#39;</span><span class=p>]</span>
+<span class=n>values_list</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span><span class=p>[</span><span class=s1>&#39;attributes&#39;</span><span class=p>]</span>
+<span class=n>formatting_values</span> <span class=o>=</span> <span class=n>values_list</span><span class=o>.</span><span class=n>split</span><span class=p>(</span><span class=s2>&#34;,&#34;</span><span class=p>)</span>
+<span class=n>tags_list</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span><span class=p>[</span><span class=s1>&#39;tags&#39;</span><span class=p>]</span>
+<span class=n>formatted_tags</span> <span class=o>=</span> <span class=n>tags_list</span><span class=o>.</span><span class=n>split</span><span class=p>(</span><span class=s2>&#34;,&#34;</span><span class=p>)</span>
+<span class=n>bucket_name</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span>\<span class=p>[</span><span class=s1>&#39;bucket\_name&#39;</span><span class=p>]</span>
+<span class=n>dt</span><span class=o>=</span><span class=n>date</span><span class=o>.</span><span class=n>today</span><span class=p>()</span>
+<span class=n>dtstr</span><span class=o>=</span><span class=n>dt</span><span class=o>.</span><span class=n>strftime</span><span class=p>(</span><span class=s2>&#34;%Y%m</span><span class=si>%d</span><span class=s2>&#34;</span><span class=p>)</span>
+<span class=n>s3_output_file</span><span class=o>=</span><span class=n>output_path</span> <span class=o>+</span><span class=s2>&#34;/&#34;</span><span class=o>+</span><span class=s2>&#34;ec2_report_&#34;</span><span class=o>+</span><span class=n>dtstr</span><span class=o>+</span><span class=s2>&#34;.csv&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id=functions>Functions</h2>
+<p>As usual, lets add functions to allow for repeatable script blocks. Note that a number of the functions are similar to those used in the <em>Terminate EC2 instance by tag using Python</em> post. Why re-invent the wheel!</p>
+<h2 id=assume_roles>assume_roles</h2>
+<p>If the AWS account being processed is not the AWS account the script is being executed from, you will need to assume a role defined in that target account.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=k>def</span> <span class=nf>assume_roles</span><span class=p>(</span><span class=n>acc</span><span class=p>,</span><span class=n>accounts</span><span class=p>,</span><span class=n>arole</span><span class=p>):</span>
+    <span class=k>global</span> <span class=n>acc_key</span>
+    <span class=k>global</span> <span class=n>sec_key</span>
+    <span class=k>global</span> <span class=n>sess_tok</span>
+    <span class=k>global</span> <span class=n>client</span>
+    <span class=nb>print</span><span class=p>(</span><span class=sa>f</span><span class=s2>&#34;Initating assume role for account : </span><span class=si>{</span><span class=n>acc</span><span class=si>}</span><span class=s2>&#34;</span><span class=p>)</span>
+    <span class=n>sts_conn</span> <span class=o>=</span> <span class=n>boto3</span><span class=o>.</span><span class=n>client</span><span class=p>(</span><span class=s1>&#39;sts&#39;</span><span class=p>)</span>
+    <span class=n>tmp_arn</span> <span class=o>=</span> <span class=sa>f</span><span class=s2>&#34;</span><span class=si>{</span><span class=n>acc</span><span class=si>}</span><span class=s2>:role/</span><span class=si>{</span><span class=n>arole</span><span class=si>}</span><span class=s2>&#34;</span>
+    <span class=nb>print</span><span class=p>(</span><span class=n>tmp_arn</span><span class=p>)</span>
+    <span class=n>response</span> <span class=o>=</span> <span class=n>sts_conn</span><span class=o>.</span><span class=n>assume_role</span><span class=p>(</span><span class=n>DurationSeconds</span><span class=o>=</span><span class=mi>900</span><span class=p>,</span><span class=n>RoleArn</span><span class=o>=</span><span class=sa>f</span><span class=s2>&#34;arn:aws:iam::</span><span class=si>{</span><span class=n>tmp_arn</span><span class=si>}</span><span class=s2>&#34;</span><span class=p>,</span><span class=n>RoleSessionName</span><span class=o>=</span><span class=s1>&#39;Test&#39;</span><span class=p>)</span>
+    <span class=n>acc_key</span> <span class=o>=</span> <span class=n>response</span><span class=p>[</span><span class=s1>&#39;Credentials&#39;</span><span class=p>][</span><span class=s1>&#39;AccessKeyId&#39;</span><span class=p>]</span>
+    <span class=n>sec_key</span> <span class=o>=</span> <span class=n>response</span><span class=p>[</span><span class=s1>&#39;Credentials&#39;</span><span class=p>][</span><span class=s1>&#39;SecretAccessKey&#39;</span><span class=p>]</span>
+    <span class=n>sess_tok</span> <span class=o>=</span> <span class=n>response</span><span class=p>[</span><span class=s1>&#39;Credentials&#39;</span><span class=p>][</span><span class=s1>&#39;SessionToken&#39;</span><span class=p>]</span>
+    <span class=nb>print</span><span class=p>(</span><span class=sa>f</span><span class=s2>&#34;Access key = </span><span class=si>{</span><span class=n>acc_key</span><span class=si>}</span><span class=s2>&#34;</span><span class=p>)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id=get_instances>get_instances</h3>
+<p>No filtering being done this time around. We are retrieving the defined attributes from all instances in each AWS account listed.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=k>def</span> <span class=nf>get_instances</span><span class=p>(</span><span class=n>process_acc</span><span class=p>,</span><span class=n>filters</span><span class=o>=</span><span class=p>[]):</span>
+    <span class=n>reservations</span> <span class=o>=</span> <span class=p>{}</span>
+    <span class=k>try</span><span class=p>:</span>
+        <span class=n>reservations</span> <span class=o>=</span> <span class=n>ec2</span><span class=o>.</span><span class=n>describe_instances</span><span class=p>(</span>
+            <span class=n>Filters</span><span class=o>=</span><span class=n>filters</span>
+        <span class=p>)</span>
+    <span class=k>except</span> <span class=n>botocore</span><span class=o>.</span><span class=n>exceptions</span><span class=o>.</span><span class=n>ClientError</span> <span class=k>as</span> <span class=n>e</span><span class=p>:</span>
+        <span class=nb>print</span><span class=p>(</span><span class=n>e</span><span class=o>.</span><span class=n>response</span><span class=p>[</span><span class=s1>&#39;Error&#39;</span><span class=p>][</span><span class=s1>&#39;Message&#39;</span><span class=p>])</span>
+    <span class=n>instances</span> <span class=o>=</span> <span class=p>[]</span>
+    <span class=k>for</span> <span class=n>reservation</span> <span class=ow>in</span> <span class=n>reservations</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;Reservations&#39;</span><span class=p>,</span> <span class=p>[]):</span>
+        <span class=k>for</span> <span class=n>instance</span> <span class=ow>in</span> <span class=n>reservation</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;Instances&#39;</span><span class=p>,</span> <span class=p>[]):</span>
+            <span class=n>instances</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=n>instance</span><span class=p>)</span>
+    <span class=k>return</span> <span class=n>instances</span> 
+</code></pre></td></tr></table>
+</div>
+</div><h3 id=formatted_report>formatted_report</h3>
+<p>This function is pulling in the attributes and tags we requested as environment variables. We are then creating a list of attributes and a list of tags. This makes it easier to perform the next function which writes out the CSV file. The two lists will makeup the fieldnames value for defining the column header which will be used in the proceeding function</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=k>def</span> <span class=nf>formatted_report</span><span class=p>(</span><span class=n>instances</span><span class=p>,</span><span class=n>attrib_set</span><span class=p>,</span><span class=n>tag_set</span><span class=p>):</span>
+    <span class=c1>#Build two lists. One for attributes and one for tags. These will be used to define the column values for the csv</span>
+    <span class=nb>max</span><span class=o>=</span><span class=nb>int</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=n>formatting_values</span><span class=p>))</span>
+    <span class=n>m</span><span class=o>=</span><span class=mi>0</span>
+    <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=n>formatting_values</span><span class=p>:</span>
+        <span class=n>attrib_set</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=n>i</span><span class=p>)</span>
+    <span class=k>for</span> <span class=n>t</span> <span class=ow>in</span> <span class=n>formatted_tags</span><span class=p>:</span>
+        <span class=n>tag_set</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=n>t</span><span class=p>)</span>
+    <span class=n>tag_set</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=nb>set</span><span class=p>(</span><span class=n>tag_set</span><span class=p>))</span>
+    <span class=n>attrib_set</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=nb>set</span><span class=p>(</span><span class=n>attrib_set</span><span class=p>))</span>
+    <span class=nb>print</span><span class=p>(</span><span class=n>attrib_set</span><span class=p>)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id=report_writer>report_writer</h3>
+<p>The report_writer function handles the output. All of the following items are handled in this function</p>
+<p>The file type, file name, what the header will be</p>
+<ul>
+<li>File type</li>
+<li>File name</li>
+<li>fields to include</li>
+<li>header row</li>
+<li>Some of the retrieved values need a little nudging (post processing) before adding them</li>
+</ul>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=k>def</span> <span class=nf>report_writer</span><span class=p>(</span><span class=n>processing_acc</span><span class=p>,</span><span class=n>instances</span><span class=p>,</span><span class=n>attrib_set</span><span class=p>,</span><span class=n>tag_set</span><span class=p>):</span>
+    <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=n>output_file</span><span class=p>,</span> <span class=s1>&#39;a&#39;</span><span class=p>)</span> <span class=k>as</span> <span class=n>csvfile</span><span class=p>:</span>
+        <span class=n>fieldnames</span> <span class=o>=</span> <span class=n>attrib_set</span> <span class=o>+</span> <span class=n>tag_set</span>
+        <span class=n>writer</span> <span class=o>=</span> <span class=n>csv</span><span class=o>.</span><span class=n>DictWriter</span><span class=p>(</span><span class=n>csvfile</span><span class=p>,</span> <span class=n>fieldnames</span><span class=o>=</span><span class=n>fieldnames</span><span class=p>)</span>        
+        <span class=k>if</span> <span class=n>processing_acc</span> <span class=o>==</span> <span class=mi>1</span><span class=p>:</span>
+            <span class=n>writer</span><span class=o>.</span><span class=n>writeheader</span><span class=p>()</span>
+        <span class=k>for</span> <span class=n>instance</span> <span class=ow>in</span> <span class=n>instances</span><span class=p>:</span>
+            <span class=n>row</span> <span class=o>=</span> <span class=p>{}</span>
+            <span class=nb>max</span><span class=o>=</span><span class=nb>int</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=n>attrib_set</span><span class=p>))</span>
+            <span class=n>m</span><span class=o>=</span><span class=mi>0</span>
+            <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=n>attrib_set</span><span class=p>:</span>
+                <span class=n>m</span> <span class=o>+=</span><span class=mi>1</span>
+                <span class=n>n</span> <span class=o>=</span> <span class=n>m</span><span class=o>-</span><span class=mi>1</span>
+                <span class=k>if</span> <span class=n>i</span> <span class=o>==</span> <span class=s2>&#34;State&#34;</span><span class=p>:</span> <span class=c1>#Its a list so needs more processing</span>
+                    <span class=n>tmpstate</span><span class=o>=</span><span class=n>instance</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>i</span><span class=p>)</span>
+                    <span class=n>row</span><span class=p>[</span><span class=n>attrib_set</span><span class=p>[</span><span class=n>n</span><span class=p>]]</span> <span class=o>=</span> <span class=n>tmpstate</span><span class=p>[</span><span class=s1>&#39;Name&#39;</span><span class=p>]</span>
+                <span class=k>elif</span> <span class=n>i</span> <span class=o>==</span> <span class=s2>&#34;Placement&#34;</span><span class=p>:</span>
+                    <span class=n>tmpplacement</span><span class=o>=</span><span class=n>instance</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>i</span><span class=p>)</span>
+                    <span class=n>row</span><span class=p>[</span><span class=n>attrib_set</span><span class=p>[</span><span class=n>n</span><span class=p>]]</span> <span class=o>=</span> <span class=n>tmpplacement</span><span class=p>[</span><span class=s1>&#39;AvailabilityZone&#39;</span><span class=p>]</span>
+                <span class=k>elif</span> <span class=n>i</span> <span class=o>==</span> <span class=s2>&#34;OwnerId&#34;</span><span class=p>:</span>
+                    <span class=n>nicinf</span><span class=o>=</span><span class=n>instance</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;NetworkInterfaces&#39;</span><span class=p>)</span>
+                    <span class=k>for</span> <span class=n>val</span> <span class=ow>in</span> <span class=n>nicinf</span><span class=p>:</span>
+                        <span class=k>for</span> <span class=n>val2</span><span class=p>,</span> <span class=n>val3</span> <span class=ow>in</span> <span class=n>val</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
+                            <span class=k>if</span> <span class=n>val2</span> <span class=o>==</span> <span class=s2>&#34;OwnerId&#34;</span><span class=p>:</span>
+                                <span class=n>row</span><span class=p>[</span><span class=n>attrib_set</span><span class=p>[</span><span class=n>n</span><span class=p>]]</span> <span class=o>=</span> <span class=nb>str</span><span class=p>(</span><span class=s2>&#34;&#39;&#34;</span> <span class=o>+</span> <span class=n>val3</span><span class=p>)</span> <span class=o>+</span> <span class=s2>&#34;&#39;&#34;</span>
+                <span class=k>elif</span> <span class=n>i</span> <span class=o>==</span> <span class=s2>&#34;CoreCount&#34;</span><span class=p>:</span>
+                    <span class=n>vtype</span><span class=o>=</span><span class=n>instance</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;CpuOptions&#39;</span><span class=p>)</span>
+                    <span class=k>for</span> <span class=n>vcore</span><span class=p>,</span><span class=n>cores</span> <span class=ow>in</span> <span class=n>vtype</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
+                        <span class=k>if</span> <span class=n>vcore</span> <span class=o>==</span> <span class=s2>&#34;CoreCount&#34;</span><span class=p>:</span>
+                            <span class=n>row</span><span class=p>[</span><span class=n>attrib_set</span><span class=p>[</span><span class=n>n</span><span class=p>]]</span> <span class=o>=</span> <span class=n>cores</span>
+                <span class=k>elif</span> <span class=n>i</span> <span class=o>==</span> <span class=s2>&#34;ThreadsPerCore&#34;</span><span class=p>:</span>
+                    <span class=n>vtype</span><span class=o>=</span><span class=n>instance</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;CpuOptions&#39;</span><span class=p>)</span>
+                    <span class=k>for</span> <span class=n>vcore</span><span class=p>,</span><span class=n>cores</span> <span class=ow>in</span> <span class=n>vtype</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
+                        <span class=k>if</span> <span class=n>vcore</span> <span class=o>==</span> <span class=s2>&#34;ThreadsPerCore&#34;</span><span class=p>:</span>
+                            <span class=n>row</span><span class=p>[</span><span class=n>attrib_set</span><span class=p>[</span><span class=n>n</span><span class=p>]]</span> <span class=o>=</span> <span class=n>cores</span>
+                <span class=k>else</span><span class=p>:</span>
+                    <span class=n>row</span><span class=p>[</span><span class=n>attrib_set</span><span class=p>[</span><span class=n>n</span><span class=p>]]</span> <span class=o>=</span> <span class=n>instance</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>i</span><span class=p>)</span>
+            <span class=k>for</span> <span class=n>tag</span> <span class=ow>in</span> <span class=n>instance</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;Tags&#39;</span><span class=p>,</span> <span class=p>[]):</span>
+                <span class=k>if</span> <span class=n>tag</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;Key&#39;</span><span class=p>)</span> <span class=ow>in</span> <span class=n>formatted_tags</span><span class=p>:</span>
+                    <span class=n>row</span><span class=p>[</span><span class=n>tag</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;Key&#39;</span><span class=p>)]</span> <span class=o>=</span> <span class=n>tag</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;Value&#39;</span><span class=p>)</span>
+            <span class=n>writer</span><span class=o>.</span><span class=n>writerow</span><span class=p>(</span><span class=n>row</span><span class=p>)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id=lambda_handler>lambda_handler</h3>
+<p>The lambda_handler is what AWS Lambda invokes when the script is executed. This is the main function which when called will invoke the preceding functions.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=k>def</span> <span class=nf>lambda</span>\<span class=n>handler</span><span class=p>(</span><span class=n>event</span><span class=p>,</span> <span class=n>context</span><span class=p>):</span>
+    <span class=k>global</span> <span class=n>ec2</span>
+    <span class=k>global</span> <span class=n>attrib_set</span>
+    <span class=k>global</span> <span class=n>tag_set</span>
+    <span class=k>global</span> <span class=n>instances</span>
+    <span class=k>global</span> <span class=n>session</span>
+    <span class=k>global</span> <span class=n>client</span>
+    <span class=k>global</span> <span class=n>processing_acc</span>
+    <span class=k>global</span> <span class=n>headers</span>
+    <span class=k>global</span> <span class=n>writer</span>
+    <span class=n>attrib_set</span> <span class=o>=</span> <span class=p>[]</span>
+    <span class=n>tag_set</span> <span class=o>=</span> <span class=p>[]</span>  
+    <span class=n>processing_acc</span> <span class=o>=</span> <span class=mi>0</span>
+    <span class=n>headers</span> <span class=o>=</span> <span class=mi>0</span>
+    
+    <span class=c1>#get account this is executing in so we know whether to assume a role in another account</span>
+    <span class=n>client</span> <span class=o>=</span> <span class=n>boto3</span><span class=o>.</span><span class=n>client</span><span class=p>(</span><span class=s2>&#34;sts&#34;</span><span class=p>)</span>
+    <span class=n>account_id</span> <span class=o>=</span> <span class=n>client</span><span class=o>.</span><span class=n>get_caller_identity</span><span class=p>()[</span><span class=s2>&#34;Account&#34;</span><span class=p>]</span>    
+    <span class=c1>#define s3</span>
+    <span class=n>s3</span><span class=o>=</span><span class=n>boto3</span><span class=o>.</span><span class=n>client</span><span class=p>(</span><span class=s2>&#34;s3&#34;</span><span class=p>)</span>
+    <span class=c1>#remove the old output file if exists</span>
+    <span class=nb>print</span><span class=p>(</span><span class=sa>f</span><span class=s2>&#34;Checking for file : </span><span class=si>{</span><span class=n>output_file</span><span class=si>}</span><span class=s2>&#34;</span><span class=p>)</span>
+    <span class=k>for</span> <span class=n>acc</span> <span class=ow>in</span> <span class=n>accounts</span><span class=p>:</span>
+        <span class=n>processing_acc</span> <span class=o>+=</span> <span class=mi>1</span>
+        <span class=nb>print</span><span class=p>(</span><span class=sa>f</span><span class=s2>&#34;Processing account : </span><span class=si>{</span><span class=n>processing_acc</span><span class=si>}</span><span class=s2>&#34;</span><span class=p>)</span>
+        <span class=k>if</span> <span class=n>acc</span> <span class=o>!=</span> <span class=n>account_id</span><span class=p>:</span>
+            <span class=n>assume_roles</span><span class=p>(</span><span class=n>acc</span><span class=p>,</span><span class=n>accounts</span><span class=p>,</span><span class=n>arole</span><span class=p>)</span>
+            <span class=n>ec2</span> <span class=o>=</span> <span class=n>boto3</span><span class=o>.</span><span class=n>client</span><span class=p>(</span><span class=s1>&#39;ec2&#39;</span><span class=p>,</span><span class=n>aws_access_key_id</span><span class=o>=</span><span class=n>acc_key</span><span class=p>,</span><span class=n>aws_secret_access_key</span><span class=o>=</span><span class=n>sec_key</span><span class=p>,</span><span class=n>aws_session_token</span><span class=o>=</span><span class=n>sess_tok</span><span class=p>,</span><span class=n>region_name</span><span class=o>=</span><span class=s1>&#39;eu-west-1&#39;</span><span class=p>)</span>
+            <span class=n>instances</span> <span class=o>=</span> <span class=n>get_instances</span><span class=p>(</span><span class=n>processing_acc</span><span class=p>)</span>
+            <span class=k>if</span> <span class=n>processing_acc</span> <span class=o>==</span> <span class=mi>1</span><span class=p>:</span>
+                <span class=n>formatted_report</span><span class=p>(</span><span class=n>instances</span><span class=p>,</span><span class=n>attrib_set</span><span class=p>,</span><span class=n>tag_set</span><span class=p>)</span>
+            <span class=n>report_writer</span><span class=p>(</span><span class=n>processing_acc</span><span class=p>,</span><span class=n>instances</span><span class=p>,</span><span class=n>attrib_set</span><span class=p>,</span><span class=n>tag_set</span><span class=p>)</span>
+        <span class=k>else</span><span class=p>:</span>
+            <span class=nb>print</span><span class=p>(</span><span class=sa>f</span><span class=s2>&#34;account </span><span class=si>{</span><span class=n>acc</span><span class=si>}</span><span class=s2>&#34;</span><span class=p>)</span>
+            <span class=n>ec2</span><span class=o>=</span><span class=n>boto3</span><span class=o>.</span><span class=n>client</span><span class=p>(</span><span class=s1>&#39;ec2&#39;</span><span class=p>)</span>
+            <span class=n>instances</span> <span class=o>=</span> <span class=n>get_instances</span><span class=p>(</span><span class=n>processing_acc</span><span class=p>)</span>
+            <span class=k>if</span> <span class=n>processing_acc</span> <span class=o>==</span> <span class=mi>1</span><span class=p>:</span>
+                <span class=n>formatted_report</span><span class=p>(</span><span class=n>instances</span><span class=p>,</span><span class=n>attrib_set</span><span class=p>,</span><span class=n>tag_set</span><span class=p>)</span>
+            <span class=n>report_writer</span><span class=p>(</span><span class=n>processing_acc</span><span class=p>,</span><span class=n>instances</span><span class=p>,</span><span class=n>attrib_set</span><span class=p>,</span><span class=n>tag_set</span><span class=p>)</span>
+            <span class=c1>#upload to s3</span>
+    <span class=nb>print</span><span class=p>(</span><span class=sa>F</span><span class=s2>&#34;uploading </span><span class=si>{</span><span class=n>s3_output_file</span><span class=si>}</span><span class=s2> to s3&#34;</span><span class=p>)</span>
+    <span class=n>s3</span><span class=o>.</span><span class=n>upload_file</span><span class=p>(</span><span class=n>output_file</span><span class=p>,</span> <span class=n>bucket_name</span><span class=p>,</span> <span class=n>s3_output_file</span><span class=p>)</span>    
+    <span class=nb>print</span><span class=p>(</span><span class=s2>&#34;finished&#34;</span><span class=p>)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id=security>Security</h2>
+<h3 id=script-execution>Script execution</h3>
+<p>For each of the AWS accounts that are assuming the role, the role will need to exist in that account. The same role name must be used in each AWS account you are querying. The role must trust the account which the assume is called and have at a minimum Read Only EC2 access.</p>
+<p>You can use the AWS Managed policy &ldquo;AmazonEC2ReadOnlyAccess&rdquo; to allow describing the EC2 instances.</p>
+<p>Create a role which can be used by Lambda as the execution role. The role applied to Lambda must at a minimum have;</p>
+<h4 id=httpsgithubcomdaveihartpython-aws-lambda-ec2_reporterblobmasterreadmemdassume-role-across-accountsassume-role-across-accounts><a href=https://github.com/daveihart/python-aws-lambda-ec2_reporter/blob/master/README.md#assume-role-across-accounts></a>Assume Role across accounts</h4>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=p>{</span>
+    <span class=nt>&#34;Version&#34;</span><span class=p>:</span> <span class=s2>&#34;2012-10-17&#34;</span><span class=p>,</span>
+    <span class=nt>&#34;Statement&#34;</span><span class=p>:</span> <span class=p>[</span>
+        <span class=p>{</span>
+            <span class=nt>&#34;Effect&#34;</span><span class=p>:</span> <span class=s2>&#34;Allow&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;Action&#34;</span><span class=p>:</span> <span class=s2>&#34;sts:AssumeRole&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;&lt;strong&gt;Resource&lt;/strong&gt;&#34;</span><span class=p>:</span> <span class=s2>&#34;arn:aws:iam::account_number:role/role_name&#34;</span>
+        <span class=p>}</span>
+    <span class=p>]</span>
+<span class=p>}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><em>The <strong>Resource</strong> listed in the above policy can be made into a list to define multiple accounts</em><a href=https://github.com/daveihart/python-aws-lambda-ec2_reporter/blob/master/README.md#for-logging-to-cloudwatch-useful-for-audit-and-troubleshooting></a></p>
+<h4 id=for-logging-to-cloudwatch-useful-for-audit-and-troubleshooting>For logging to cloudWatch (useful for audit and troubleshooting)</h4>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=p>{</span>
+    <span class=nt>&#34;Version&#34;</span><span class=p>:</span> <span class=s2>&#34;2012-10-17&#34;</span><span class=p>,</span>
+    <span class=nt>&#34;Statement&#34;</span><span class=p>:</span> <span class=p>[</span>
+        <span class=p>{</span>
+            <span class=nt>&#34;Effect&#34;</span><span class=p>:</span> <span class=s2>&#34;Allow&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;Action&#34;</span><span class=p>:</span> <span class=p>[</span>
+                <span class=s2>&#34;logs:CreateLogGroup&#34;</span><span class=p>,</span>
+                <span class=s2>&#34;logs:CreateLogStream&#34;</span><span class=p>,</span>
+                <span class=s2>&#34;logs:PutLogEvents&#34;</span>
+            <span class=p>],</span>
+            <span class=nt>&#34;Resource&#34;</span><span class=p>:</span> <span class=s2>&#34;*&#34;</span>
+        <span class=p>}</span>
+    <span class=p>]</span>
+<span class=p>}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=httpsgithubcomdaveihartpython-aws-lambda-ec2_reporterblobmasterreadmemdability-to-upload-to-s3-bucketability-to-upload-to-s3-bucket><a href=https://github.com/daveihart/python-aws-lambda-ec2_reporter/blob/master/README.md#ability-to-upload-to-s3-bucket></a>Ability to upload to S3 bucket</h4>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=p>{</span>
+    <span class=nt>&#34;Version&#34;</span><span class=p>:</span> <span class=s2>&#34;2012-10-17&#34;</span><span class=p>,</span>
+    <span class=nt>&#34;Statement&#34;</span><span class=p>:</span> <span class=p>[</span>
+        <span class=p>{</span>
+            <span class=nt>&#34;Effect&#34;</span><span class=p>:</span> <span class=s2>&#34;Allow&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;Action&#34;</span><span class=p>:</span> <span class=p>[</span>
+                <span class=s2>&#34;s3:ListAllMyBuckets&#34;</span><span class=p>,</span>
+                <span class=s2>&#34;s3:GetBucketLocation&#34;</span>
+            <span class=p>],</span>
+            <span class=nt>&#34;Resource&#34;</span><span class=p>:</span> <span class=s2>&#34;*&#34;</span>
+        <span class=p>},</span>
+        <span class=p>{</span>
+            <span class=nt>&#34;Effect&#34;</span><span class=p>:</span> <span class=s2>&#34;Allow&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;Action&#34;</span><span class=p>:</span> <span class=s2>&#34;s3:PutObject&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;Resource&#34;</span><span class=p>:</span> <span class=p>[</span>
+                <span class=s2>&#34;arn:aws:s3:::bucket_name&#34;</span><span class=p>,</span>
+                <span class=s2>&#34;arn:aws:s3:::bucket_name/*&#34;</span>
+            <span class=p>]</span>
+        <span class=p>}</span>
+    <span class=p>]</span>
+<span class=p>}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id=httpsgithubcomdaveihartpython-aws-lambda-ec2_reporterblobmasterreadmemds3-considerationss3-access><a href=https://github.com/daveihart/python-aws-lambda-ec2_reporter/blob/master/README.md#s3-considerations></a>S3 access</h3>
+<p>Define a policy to allow the AWS Lambda function access to your S3 bucket</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=p>{</span>
+    <span class=nt>&#34;Version&#34;</span><span class=p>:</span> <span class=s2>&#34;2012-10-17&#34;</span><span class=p>,</span>
+    <span class=nt>&#34;Statement&#34;</span><span class=p>:</span> <span class=p>[</span>
+        <span class=p>{</span>
+            <span class=nt>&#34;Effect&#34;</span><span class=p>:</span> <span class=s2>&#34;Allow&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;Action&#34;</span><span class=p>:</span> <span class=p>[</span>
+                <span class=s2>&#34;s3:ListAllMyBuckets&#34;</span><span class=p>,</span>
+                <span class=s2>&#34;s3:GetBucketLocation&#34;</span>
+            <span class=p>],</span>
+            <span class=nt>&#34;Resource&#34;</span><span class=p>:</span> <span class=s2>&#34;*&#34;</span>
+        <span class=p>},</span>
+        <span class=p>{</span>
+            <span class=nt>&#34;Effect&#34;</span><span class=p>:</span> <span class=s2>&#34;Allow&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;Action&#34;</span><span class=p>:</span> <span class=s2>&#34;s3:PutObject&#34;</span><span class=p>,</span>
+            <span class=nt>&#34;Resource&#34;</span><span class=p>:</span> <span class=p>[</span>
+                <span class=s2>&#34;arn:aws:s3:::BUCKETNAME&#34;</span><span class=p>,</span>
+                <span class=s2>&#34;arn:aws:s3:::BUCKETNAME/*&#34;</span>
+            <span class=p>]</span>
+        <span class=p>}</span>
+    <span class=p>]</span>
+<span class=p>}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id=s3-considerations>S3 considerations</h3>
+<p>Unless you have any contractual or regulatory requirements to retain x amount of logs, you could introduce a Lifecycle rule to the s3 bucket to remove objects older than x days.</p>
+<h2 id=trigger--amazon-eventbridge-event>Trigger : Amazon EventBridge event</h2>
+<p>Please use the following steps to define a schedule trigger to generate the log files</p>
+<ol>
+<li>On the AWS Console, navigate to CloudWatch Amazon EventBridge. Then select the Events | Rules</li>
+<li>Select the Create Rule button</li>
+<li>Select the schedule radio button and define your schedule. We used a cron expression 00 03 ? * * * This executed the code at 3am everyday of the week</li>
+<li>Select the add target button</li>
+<li>Choose Lambda function and then select your function from the drop down list</li>
+<li>Select the Configure details button</li>
+<li>Give the rule a meaningful name and description</li>
+<li>Select the Create rule button</li>
+</ol>
+<h4 id=testing>Testing</h4>
+<p>To test your AWS Lambda function without using the event trigger, configure a test event and have nothing define in the json, e.g.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>{}
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=aws-lambda-settings>AWS Lambda settings</h4>
+<p>This one always pops up when I develop code to run on AWS Lambda</p>
+<figure>
+<img src=/image/image-28.png>
+</figure>
+<p>The key entry in that above screenshot is <strong>Timeout</strong> (actually they are all important this is just the one which will catch you out). The default value is 3 seconds. Consider that this function is describing instances across multiple accounts. The amount of time it takes is going to depend on many factors such as geographical locations, amount of instances to retrieve, number of accounts to gather from. That&rsquo;s just a few off the top of my head, I am sure there are more. The maximum timeout is 900 seconds so you will need to split the functions if this is not sufficient.</p>
+<h2 id=planned-enhancements>Planned enhancements</h2>
+<p>Send the output as an email attachment. Under test.</p>
+<h2 id=conclusion>Conclusion</h2>
+<p>So lets sum up. We have deployed a python script into AWS Lambda. Granted AWS Lambda access to S3, AWS CloudWatch and AWS STS so it can gain temporary credentials and assume roles across accounts. We have defined roles in other AWS accounts which allow the account which is executing the AWS Lambda function access to describe EC2 instances. We have then generated a csv file with specific values we requested and posted this to an S3 bucket.</p>
+<p>Great stuff. As usual, feel free to ask any questions or let me know if you have any suggestions on how to improve the process. AWS is a constantly evolving landscape so change is inevitable. Oh almost forgot, link to the GitHub repository <a href=https://github.com/daveihart/python-aws-lambda-ec2_reporter>here</a>.</p>
+</div>
+<footer class=post-footer>
+<div class=post-tags>
+<a href=https://davehart.co.uk/tags/aws/>AWS</a>
+<a href=https://davehart.co.uk/tags/aws/>AWS</a>
+<a href=https://davehart.co.uk/tags/aws-lambda/>AWS Lambda</a>
+<a href=https://davehart.co.uk/tags/blog/>Blog</a>
+<a href=https://davehart.co.uk/tags/lambda/>lambda</a>
+<a href=https://davehart.co.uk/tags/python/>python</a>
+<a href=https://davehart.co.uk/tags/python/>python</a>
+<a href=https://davehart.co.uk/tags/s3/>S3</a>
+</div>
+<nav class=post-nav>
+<a class=prev href=/post/backups-monitoring-and-maintenance-keep-that-blog-alive/>
+<i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18"><path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417l277.93508-310.326815c11.338233-12.190647 11.035334-32.285311-.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"/></svg>
+</i>
+<span class="prev-text nav-default">Backups, monitoring and maintenance. Keep that blog alive!</span>
+<span class="prev-text nav-mobile">Prev</span>
+</a>
+<a class=next href=/post/terminate-ec2-instance-by-tag-using-python/>
+<span class="next-text nav-default">Terminate EC2 instance by tag using Python</span>
+<span class="prev-text nav-mobile">Next</span>
+<i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18"><path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697c-11.777231-11.500939-30.216186-10.304694-41.178865 2.712784z"/></svg>
+</i>
+</a>
+</nav>
+</footer>
+</article>
+</div>
+</div>
+</main>
+<footer id=footer class=footer>
+<div class=icon-links>
+<a href=http://localhost:1313 rel="me noopener" class=iconfont title=twitter target=_blank><svg class="icon" viewBox="0 0 1264 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M1229.8616 18.043658s-117.852626 63.135335-164.151872 67.344358C960.484169-78.763856 560.627046-7.210476 627.971403 308.466201 278.622548 312.675223 89.216542 47.506814 89.216542 47.506814S-28.636084 236.91282 164.978944 392.646647C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042 50.5082679999998-16.83609 134.688715-143.10676 134.688715-143.10676s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"/></svg>
+</a>
+<a href=http://localhost:1313 rel="me noopener" class=iconfont title=linkedin target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="33" height="33"><path d="M872.405333 872.618667H720.768V635.008c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333.0-91.136 61.653333-91.136 125.397334v241.792H398.976V384H544.64v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667.0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667.0 01-88.021333-88.106666A88.064 88.064.0 11227.712 317.141333zm76.032 555.477334H151.68V384h152.064v488.618667zM948.266667.0h-872.704C33.792.0.0 33.024.0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667.0 948.138667.0h.128z"/></svg>
+</a>
+<a href=http://localhost:1313 rel="me noopener" class=iconfont title=github target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M512 12.672c-282.88.0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667.0-12.16-.426667-44.373333-.64-87.04C242.005334 929.664 211.968 830.08 211.968 830.08 188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333.0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333.0.0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667.0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72.0 68.522667-.64 123.562667-.64 140.202666.0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"/></svg>
+</a>
+<a href=https://davehart.co.uk/index.xml rel="noopener alternate" type=application/rss+xml class=iconfont title=rss target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30"><path d="M819.157333 1024C819.157333 574.592 449.408 204.8.0 204.8V0c561.706667.0 1024 462.293333 1024 1024H819.157333zM140.416 743.04a140.8 140.8.0 01140.501333 140.586667A140.928 140.928.0 01140.074667 1024C62.72 1024 0 961.109333.0 883.626667S62.933333 743.082667 140.416 743.04zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667v-199.04c372.352.0 678.784 306.517333 678.784 678.826667z"/></svg>
+</a>
+</div>
+<div class=copyright>
+<span class=power-by>
+Powered by <a class=hexo-link href=https://gohugo.io>Hugo</a>
+</span>
+<span class=division>|</span>
+<span class=theme-info>
+Theme - <a class=theme-link href=https://github.com/xianmin/hugo-theme-jane>Jane</a>
+</span>
+<span class=copyright-year>
+&copy;
+2020 -
+2021
+<span class=heart>
+<i class=iconfont><svg class="icon" viewBox="0 0 1025 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="14" height="14"><path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7.0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1.0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2.0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3.1-42.5-8-83.6-24-122.2z" fill="#8a8a8a"/></svg>
+</i>
+</span><span class=author>
+Dave
+</span></span>
+</div>
+</footer>
+<div class=back-to-top id=back-to-top>
+<i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="35" height="35"><path d="M510.866688 227.694839 95.449397 629.218702h235.761562L329.15309 958.01517h362.40389L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777h894.052392v131.813095H63.840492V63.962777zm0 0"/></svg>
+</i>
+</div>
+</div>
+<script type=text/javascript src=/lib/jquery/jquery-3.2.1.min.js></script>
+<script type=text/javascript src=/lib/slideout/slideout-1.0.1.min.js></script>
+<script type=text/javascript src=/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin=anonymous></script>
+<script type=text/javascript src=/js/load-photoswipe.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe.min.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe-ui-default.min.js></script>
+</body>
+</html>

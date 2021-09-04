@@ -1,0 +1,816 @@
+<!doctype html><html lang=en itemscope itemtype=http://schema.org/WebPage>
+<head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<title>Terminate EC2 instance by tag using Python - Dave's DevOps blog</title>
+<meta name=renderer content="webkit">
+<meta name=viewport content="width=device-width,initial-scale=1,user-scalable=yes">
+<meta name=MobileOptimized content="width">
+<meta name=HandheldFriendly content="true">
+<meta name=applicable-device content="pc,mobile">
+<meta name=theme-color content="#f8f5ec">
+<meta name=msapplication-navbutton-color content="#f8f5ec">
+<meta name=apple-mobile-web-app-capable content="yes">
+<meta name=apple-mobile-web-app-status-bar-style content="#f8f5ec">
+<meta name=mobile-web-app-capable content="yes">
+<meta name=author content="Dave">
+<meta name=description content="I originally developed this script in bash for a GoCD pipeline. The intention of the script is to decommission instances in batch whilst generating a final snapshot. For those of you that wonder why is Terraform not being used? (You know who you are) Good question. Not everyone is using Terraform yet and refactoring/importing deployment methods will incur costs which some clients are not prepared to pay.
+Why change it? The move to Python was a logical one for me, it removes any OS dependency and I also see this as good excuse to practice my Python.">
+<meta name=keywords content="Hugo,theme,jane">
+<meta name=generator content="Hugo 0.88.0">
+<link rel=canonical href=https://davehart.co.uk/post/terminate-ec2-instance-by-tag-using-python/>
+<link rel=icon href=/favicon.ico>
+<link rel=stylesheet href=/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css integrity="sha256-+ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media=screen crossorigin=anonymous>
+<meta property="og:title" content="Terminate EC2 instance by tag using Python">
+<meta property="og:description" content="I originally developed this script in bash for a GoCD pipeline. The intention of the script is to decommission instances in batch whilst generating a final snapshot. For those of you that wonder why is Terraform not being used? (You know who you are) Good question. Not everyone is using Terraform yet and refactoring/importing deployment methods will incur costs which some clients are not prepared to pay.
+Why change it? The move to Python was a logical one for me, it removes any OS dependency and I also see this as good excuse to practice my Python.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://davehart.co.uk/post/terminate-ec2-instance-by-tag-using-python/"><meta property="article:section" content="post">
+<meta property="article:published_time" content="2020-09-25T17:35:22+00:00">
+<meta property="article:modified_time" content="2020-09-25T17:35:22+00:00">
+<meta itemprop=name content="Terminate EC2 instance by tag using Python">
+<meta itemprop=description content="I originally developed this script in bash for a GoCD pipeline. The intention of the script is to decommission instances in batch whilst generating a final snapshot. For those of you that wonder why is Terraform not being used? (You know who you are) Good question. Not everyone is using Terraform yet and refactoring/importing deployment methods will incur costs which some clients are not prepared to pay.
+Why change it? The move to Python was a logical one for me, it removes any OS dependency and I also see this as good excuse to practice my Python."><meta itemprop=datePublished content="2020-09-25T17:35:22+00:00">
+<meta itemprop=dateModified content="2020-09-25T17:35:22+00:00">
+<meta itemprop=wordCount content="2222">
+<meta itemprop=keywords content="AWS,AWS,Blog,boto3,deleteontermination,ec2,GitHub,GitHub,python,python,snapshot,tags,waiters,"><meta name=twitter:card content="summary">
+<meta name=twitter:title content="Terminate EC2 instance by tag using Python">
+<meta name=twitter:description content="I originally developed this script in bash for a GoCD pipeline. The intention of the script is to decommission instances in batch whilst generating a final snapshot. For those of you that wonder why is Terraform not being used? (You know who you are) Good question. Not everyone is using Terraform yet and refactoring/importing deployment methods will incur costs which some clients are not prepared to pay.
+Why change it? The move to Python was a logical one for me, it removes any OS dependency and I also see this as good excuse to practice my Python."><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script>
+<script src=https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js></script><![endif]-->
+</head>
+<body>
+<div id=mobile-navbar class=mobile-navbar>
+<div class=mobile-header-logo>
+<a href=/ class=logo>Dave's blog</a>
+</div>
+<div class=mobile-navbar-icon>
+<span></span>
+<span></span>
+<span></span>
+</div>
+</div>
+<nav id=mobile-menu class="mobile-menu slideout-menu">
+<ul class=mobile-menu-list>
+<li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/>Home</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/post/>Posts</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/tags/>Tags</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/about/about/>About</a>
+</li>
+</ul>
+</nav>
+<link rel=stylesheet href=/lib/photoswipe/photoswipe.min.css>
+<link rel=stylesheet href=/lib/photoswipe/default-skin/default-skin.min.css>
+<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div>
+<div class=pswp__scroll-wrap>
+<div class=pswp__container>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+</div>
+<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__top-bar>
+<div class=pswp__counter></div>
+<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+<div class=pswp__preloader>
+<div class=pswp__preloader__icn>
+<div class=pswp__preloader__cut>
+<div class=pswp__preloader__donut></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div>
+</div>
+<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+</button>
+<div class=pswp__caption>
+<div class=pswp__caption__center></div>
+</div>
+</div>
+</div>
+</div>
+<header id=header class="header container">
+<div class=logo-wrapper>
+<a href=/ class=logo>
+Dave's blog
+</a>
+</div>
+<nav class=site-navbar>
+<ul id=menu class=menu>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/>Home</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/post/>Posts</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/tags/>Tags</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/about/about/>About</a>
+</li>
+</ul>
+</nav>
+</header>
+<div id=mobile-panel>
+<main id=main class="main bg-llight">
+<div class=content-wrapper>
+<div id=content class="content container">
+<article class="post bg-white">
+<header class=post-header>
+<h1 class=post-title>Terminate EC2 instance by tag using Python</h1>
+<div class=post-meta>
+<time datetime=2020-09-25 class=post-time>
+2020-09-25
+</time>
+<span class=more-meta> 2222 words </span>
+<span class=more-meta> 11 min read </span>
+</div>
+</header>
+<div class=post-toc id=post-toc>
+<h2 class=post-toc-title>Table of Contents</h2>
+<div class=post-toc-content>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#why-change-it>Why change it?</a></li>
+<li><a href=#considerations>Considerations.</a></li>
+<li><a href=#flowchart>Flowchart</a></li>
+<li><a href=#script>Script</a>
+<ul>
+<li><a href=#imports>Imports</a></li>
+<li><a href=#variables>Variables</a></li>
+<li><a href=#functions>Functions</a></li>
+</ul>
+</li>
+<li><a href=#testing>Testing</a></li>
+<li><a href=#conclusion>Conclusion</a></li>
+</ul>
+</nav>
+</div>
+</div>
+<div class=post-content>
+<p>I originally developed this script in bash for a <a href=https://www.gocd.org/>GoCD</a> pipeline. The intention of the script is to decommission instances in batch whilst generating a final snapshot. For those of you that wonder why is Terraform not being used? (You know who you are) Good question. Not everyone is using Terraform yet and refactoring/importing deployment methods will incur costs which some clients are not prepared to pay.</p>
+<h2 id=why-change-it>Why change it?</h2>
+<p>The move to Python was a logical one for me, it removes any OS dependency and I also see this as good excuse to practice my Python. If you don&rsquo;t get to use a skill a lot you tend to lose it. The previous bash script used an input file and those nasty access keys (Not exactly secure). This one will use tags and roles. There were also some enhancements AWS had introduced since the original script was written which would optimise the code, waiters for example.</p>
+<h2 id=considerations>Considerations.</h2>
+<p>I considered the following activities as part of the script execution.</p>
+<ul>
+<li>The tags need to be clearly defined to only target the instances required.</li>
+<li>I should first snapshot the instance.</li>
+<li>Actually I should check if still running and if so stop it. (<a href=https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-creating-snapshot.html>Best practice</a> for root volumes)</li>
+<li>Then take a snapshot</li>
+<li>Wait! I should confirm it has shutdown before taking the snapshot (enter the waiter)</li>
+<li>Now let&rsquo;s take a snapshot</li>
+<li>Then I can terminate the instance</li>
+<li>hmm, I should wait for the snapshots to complete first (waiter is back)</li>
+<li>Now I can terminate the instance</li>
+<li>What if the EBS volume was created so that it does not terminate on deletion of the instance (<strong><em>deleteontermination=False</em></strong>). Best add a check for that and change to True if found.</li>
+</ul>
+<p>Got there in the end but that was how I initially planned it on the whiteboard.</p>
+<h2 id=flowchart>Flowchart</h2>
+<p>When writing any code I find a diagram helps me focus on the process flow.</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terminate-ec2-instance-by-tag-using-python/ec2-terminate-flow_hu6c457011b29d1afcbd92f03dd0bfdc16_30884_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terminate-ec2-instance-by-tag-using-python/ec2-terminate-flow_hu6c457011b29d1afcbd92f03dd0bfdc16_30884_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terminate-ec2-instance-by-tag-using-python/ec2-terminate-flow_hu6c457011b29d1afcbd92f03dd0bfdc16_30884_800x0_resize_box_3.png>
+</figure>
+<h2 id=script>Script</h2>
+<p>The script is broken down into multiple functions. It makes a lot of sense this way as you only need to write a block of code once and can call it many times. Additionally it&rsquo;s easier to pinpoint issues with your code. GitHub Link at the end for the full code.</p>
+<h3 id=imports>Imports</h3>
+<p>This first block of code is setting the scene by <strong><em>importing</em></strong> libraries or only parts of a library by using <strong><em>from</em></strong></p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>#!/usr/bin/env python3.6
+import botocore
+import boto3
+from boto3.session import Session
+from botocore.exceptions import ClientError
+import time
+import os
+from datetime import date
+dt=date.today()
+dtstr=dt.strftime(&#34;%Y-%m-%d&#34;)
+</code></pre></td></tr></table>
+</div>
+</div>
+<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
+<img style=max-width:100%;width:auto;height:auto src=/post/terminate-ec2-instance-by-tag-using-python/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+</figure>
+<p>Boto3 is the Amazon Web Services (AWS) Software Development Kit (SDK) for Python, which allows Python developers to write software that makes use of services like Amazon S3 and Amazon EC2.</p>
+<p><em>source <a href=https://github.com/boto/boto3>https://github.com/boto/boto3</a></em></p>
+<h3 id=variables>Variables</h3>
+<p>Now we set some parameters to use throughout the script. If you were executing this from a continuous deployment package such as Jenkins, then most of these could be defined as Environment Variables.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>dry\_run=False
+search\_tag = &#34;Name&#34; # Tag to search for instances
+search\_value = &#34;dtest\*&#34;  #value in tag to search for instances 
+snap\_prefix = dtstr+&#34;-pre-termination-snapshot&#34; #snapshot description
+arole=&#34;AddARoleHere&#34; #role to assume across accounts
+accounts = \[&#39;0000000000000&#39;,&#39;1111111111111&#39;\] # list of accounts e.g \[&#39;0000000000000&#39;,&#39;1111111111111&#39;,&#39;2222222222222222&#39;,&#39;333333333333333&#39;\]
+#End of variables
+total\_acc = len(accounts)
+</code></pre></td></tr></table>
+</div>
+</div><h3 id=functions>Functions</h3>
+<p>There are a number of functions to walk through.</p>
+<h4 id=assume_roles><strong>assume_roles</strong></h4>
+<p>If the AWS account being processed is not the AWS account the script is being executed from, you will need to assume a role defined in the target account. The role will have to have sufficient access to perform the necessary EC2 operations. In the source AWS account the instance, person or service performing the execution will need access to use the AWS Security Token Service (STS). AWS STS will grant temporary short lived credentials to perform the necessary activities. This is the recommended approach and removed the need to have credentials stored in code.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>def assume\_roles(acc,accounts,arole):
+    global acc\_key
+    global sec\_key
+    global sess\_tok
+    global client
+    sts\_conn = boto3.client(&#39;sts&#39;)
+    tmp\_arn = f&#34;{acc}:role/{arole}&#34;
+    response = sts\_conn.assume\_role(DurationSeconds=900,RoleArn=f&#34;arn:aws:iam::{tmp\_arn}&#34;,RoleSessionName=&#39;Test&#39;)
+    acc\_key = response\[&#39;Credentials&#39;\]\[&#39;AccessKeyId&#39;\]
+    sec\_key = response\[&#39;Credentials&#39;\]\[&#39;SecretAccessKey&#39;\]
+    sess\_tok = response\[&#39;Credentials&#39;\]\[&#39;SessionToken&#39;\]
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=get_instances><strong>get_instances</strong></h4>
+<p>Once you have worked out the AWS account security settings , you can start retrieving the EC2 instances for processing. The EC2 instances retrieved are filtered to only retrieve instances matching the search_tag and search_value. These are then added to a list for further processing.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>def get\_instances(process\_acc,filters=\[{&#39;Name&#39;: &#39;tag:&#39;+search\_tag, &#39;Values&#39;: \[search\_value\]}\]):
+    reservations = {}
+    try:
+        reservations = ec2.describe\_instances(
+            Filters=filters
+        )
+    except botocore.exceptions.ClientError as e:
+        print(e.response\[&#39;Error&#39;\]\[&#39;Message&#39;\])
+    instances = \[\]
+    for reservation in reservations.get(&#39;Reservations&#39;, \[\]):
+        for instance in reservation.get(&#39;Instances&#39;, \[\]):
+            instances.append(instance)
+    return instances 
+</code></pre></td></tr></table>
+</div>
+</div>
+<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
+<img style=max-width:100%;width:auto;height:auto src=/post/terminate-ec2-instance-by-tag-using-python/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+</figure>
+<p><strong><em>A waiter will automatically poll AWS resources for pre-defined status changes. These will perform a check every x seconds for x number of times. x varies depending on the <a href=https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#waiters>waiter</a> being used.</em></strong></p>
+<h4 id=shutdown_instance--shutdown_instance_wait><strong>shutdown_instance & shutdown_instance_wait</strong></h4>
+<p>Easy one, shutdown the EC2 instance and then call the waiter.</p>
+<p>e.g. the _class _EC2.Waiter.InstanceTerminated polls <a href=https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_instances>EC2.Client.describe_instances()</a> every 15 seconds until a successful state is reached. An error is returned after 40 failed checks (10 minutes if you were working it out).</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>def shutdown\_instance(Iid):
+    ec2.stop\_instances(InstanceIds=Iid)
+    shutdown\_instance\_wait(Iid)
+
+def shutdown\_instance\_wait(Iid):
+    shutdown\_instance\_waiter = ec2.get\_waiter(&#39;instance\_stopped&#39;)
+    try:
+        shutdown\_instance\_waiter.wait(InstanceIds=Iid)
+    except botocore.exceptions.WaiterError as er:
+        if &#34;Max attempts exceeded&#34; in er.message:
+            print(f&#34;Instance {Iid\[0\]} did not shutdown in 600 seconds&#34;)
+        else:
+            print(er.message)
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=snapshot_volumes--create_snapshots_wait><strong>snapshot_volumes & create_snapshots_wait</strong></h4>
+<p>This function creates a snapshot of all EBS volumes attached to the specific EC2 instance (You used to have to enumerate each volumes programmatically. The addition of the <strong>s</strong> at the end of <strong>create_snapshots</strong> is welcome). This will also copy any tags defined on the source EBS volumes to the snapshot. Nice touch. The waiter is just waiting for each snapshot to complete. You will see that I had to add all the snapshot ID&rsquo;s to a list. This is then used by the waiter.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>def snapshot\_volumes(Iid,inst):
+    snap\_check=\[\]
+    snap\_shot = ec2.create\_snapshots(
+        Description=snap\_prefix,
+        InstanceSpecification={
+            &#39;InstanceId&#39;: Iid\[0\],
+            &#39;ExcludeBootVolume&#39;: False
+        },
+        DryRun=dry\_run,
+        CopyTagsFromSource=&#39;volume&#39;
+    )
+    #build a list of snapshotids so we can check if they are complete - waiter
+    for snapid in snap\_shot.get(&#39;Snapshots&#39;):
+        snap\_check.append(snapid.get(&#39;SnapshotId&#39;))
+    create\_snapshots\_wait(snap\_check)
+
+def create\_snapshots\_wait(snap\_check):
+    try:
+        create\_snapshot\_waiter = ec2.get\_waiter(&#39;snapshot\_completed&#39;)
+        create\_snapshot\_waiter.wait(SnapshotIds=snap\_check)  
+    except botocore.exceptions.WaiterError as er:
+        if &#34;Max attempts exceeded&#34; in er.message:
+            print(f&#34;Instance {Iid\[0\]} did not shutdown in 600 seconds&#34;)
+        else:
+            print(er.message)
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=check_volumes><strong>check_volumes</strong></h4>
+<p>As this exercise is all about cleaning up EC2 instances it would be remiss to leave a load of unattached (orphaned) EBS volumes behind. By default a root volume will be automatically deleted on EC2 instance termination but the same cannot be said for EBS volumes added afterwards. To remove these we need to ensure the EBS volumes <strong><em>&ldquo;deleteontermination&rdquo;</em></strong> attribute is set as True.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>def check\_volumes(Iid,inst):
+    terminate\_check=\[\]
+    for bdevice in inst.get(&#39;BlockDeviceMappings&#39;):
+        vol = bdevice.get(&#39;Ebs&#39;) #type
+        volatt = bdevice.get(&#39;DeviceName&#39;) #attachment, always useful
+        delter = vol.get(&#39;DeleteOnTermination&#39;)
+        if delter == False:
+            delonterm = ec2.modify\_instance\_attribute(
+                Attribute=&#39;blockDeviceMapping&#39;,
+                BlockDeviceMappings=\[
+                    {
+                        &#39;DeviceName&#39;: volatt,
+                        &#39;Ebs&#39;: {
+                            &#39;DeleteOnTermination&#39;: True,
+                            }}\],
+                            InstanceId=Iid\[0\])
+        else:
+            print(f&#34;deleteontermination check : EBS will be deleted, no change required&#34;)
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=terminate_instances><strong>terminate_instances</strong></h4>
+<p>As long as all the other functions have completed we will now be terminating the EC2 instance.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>def terminate\_instances(Iid,FailedIid,SuccessIid):
+    try:
+        terminate\_instance = ec2.terminate\_instances(
+            InstanceIds=Iid,
+            DryRun=dry\_run
+        )
+        SuccessIid.append(Iid\[0\])
+    except ClientError as er:
+        FailedIid.append(Iid\[0\])
+        print(f&#34;an error occured terminating {Iid\[0\]} - {err.message}&#34;)
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=main><strong>Main</strong></h4>
+<p>This is the function which ties it all together. It handles the calls to the other functions at the right part of the process.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>def main():
+    global ec2
+    global instances
+    processing\_acc = 0
+    FailedIid = \[\]
+    SuccessIid = \[\]
+    #retrieve account context the script is executing so we know whether to assume a role or not
+    client = boto3.client(&#34;sts&#34;)
+    account\_id = client.get\_caller\_identity()\[&#34;Account&#34;\]
+    for acc in accounts:
+        processing\_acc += 1
+        if acc != account\_id:
+            assume\_roles(acc,accounts,arole)
+            ec2 = boto3.client(&#39;ec2&#39;,aws\_access\_key\_id=acc\_key,aws\_secret\_access\_key=sec\_key,aws\_session\_token=sess\_tok,region\_name=&#39;eu-west-1&#39;)
+        else:
+            print(f&#34;Execution account, no assume required&#34;)
+            ec2=boto3.client(&#39;ec2&#39;)
+        instances = get\_instances(processing\_acc)
+        for inst in instances:
+            Iid = \[\]
+            Iid.append(inst.get(&#39;InstanceId&#39;))
+            Istate = inst.get(&#39;State&#39;)
+            IstateCode = Istate.get(&#39;Code&#39;)
+            #The for and first if can be removed, used to retrieve the name tag for verbose output
+            for tags in inst.get(&#39;Tags&#39;):
+                if tags\[&#34;Key&#34;\] == &#39;Name&#39;:
+                    Iname = tags\[&#34;Value&#34;\]
+                    print(f&#34;Instance Name : {Iname} ; Instance Id : {Iid\[0\]} ; Instance state : {IstateCode}&#34;)
+                    #EC2 Instance States = 0 : pending ; 16 : running ; 32 : shutting-down ; 48 : terminated ; 64 : stopping ; 80 : stopped
+                    if IstateCode == 16 or IstateCode ==32 or IstateCode == 64 or IstateCode == 80:
+                        if IstateCode == 16:
+                            print(&#34;Instance is running&#34;) # proceed to shut it down
+                            shutdown\_instance(Iid)
+                        elif IstateCode == 32 or IstateCode == 64: 
+                            print(&#34;Instance is already shutting down, calling waiter&#34;)
+                            shutdown\_instance\_wait(Iid)
+                        elif IstateCode == 80:
+                            print(f&#34;Instance is stopped&#34;)
+                        check\_volumes(Iid,inst)
+                        snapshot\_volumes(Iid,inst)
+                        terminate\_instances(Iid,FailedIid,SuccessIid)
+                    else:
+                        print(f&#34;Warning : Instance {Iid\[0\]} is not running, stopping or stopped. Please perform a manual check&#34;)
+                        FailedIid.append(Iid\[0\])
+    print(f&#34;Terminated : {SuccessIid}&#34;)
+    print(f&#34;Failed to Terminate : {FailedIid}&#34;)
+            
+if \_\_name\_\_ == &#34;\_\_main\_\_&#34;:
+    main()
+</code></pre></td></tr></table>
+</div>
+</div><h2 id=testing>Testing</h2>
+<p>Testing was performed during and after the code generation. For the final bout of testing I created a few EC2 instances across multiple AWS accounts in varying states. These had a mixture of 1-4 EBS volumes attached.</p>
+<p>The instances all had the &ldquo;Name&rdquo; tag &ldquo;dtestx&rdquo; where x was a numeric value.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Account</th>
+<th>Status</th>
+<th>EBS No.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dtest1</td>
+<td>1</td>
+<td>Running</td>
+<td>2</td>
+</tr>
+<tr>
+<td>dtest2</td>
+<td>1</td>
+<td>Stopped</td>
+<td>1</td>
+</tr>
+<tr>
+<td>dtest3</td>
+<td>2</td>
+<td>Running</td>
+<td>4</td>
+</tr>
+<tr>
+<td>dtest4</td>
+<td>2</td>
+<td>Running</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Using the &ldquo;<em>Name</em>&rdquo; tag was only for example sake. I recommend a dedicated unique tag Key and tag Value</p>
+</blockquote>
+<p>I have extracted the output below for an example. It may seem a bit verbose for some, I personally like to get as much info as I can from my scripts. You will see that the last two lines from the output identify the EC2 instances either successful or unsuccessfully processed.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-text data-lang=text>prompt:~/scripts/python-aws-ec2\_cleanup$ source env/bin/activate
+(env) prompt:~/scripts/python-aws-ec2\_cleanup$ python3.6 ec2cleanup1.0.py
+2 AWS account(s) detected
+Processing account : 1
+Execution account, no assume required
+Instance Name : dtest2 ; Instance Id : i-0550d3810abdcced0 ; Instance state : 80
+Instance is stopped
+Checking volumes attached to [&#39;i-0550d3810abdcced0&#39;] for Termination settings
+deleteontermination check : EBS will be deleted, no change required
+Processing volumes attached to i-0550d3810abdcced0 for snapshot
+Waiting for [&#39;snap-000bedcc242048999&#39;]
+Proceding with termination of i-0550d3810abdcced0
+Instance Name : dtest1 ; Instance Id : i-0624c25c58820f3bf ; Instance state : 16
+Instance is running, shutting down prior to creating snapshot(s) of attached volume(s)
+Instance i-0624c25c58820f3bf has shutdown successfully
+Checking volumes attached to [&#39;i-0624c25c58820f3bf&#39;] for Termination settings
+deleteontermination check : EBS is not set to delete on termination, lets fix that
+deleteontermination check : EBS is not set to delete on termination, lets fix that
+Processing volumes attached to i-0624c25c58820f3bf for snapshot
+Waiting for [&#39;snap-0f31c5a78b0d46473&#39;, &#39;snap-073bc00fc605141c0&#39;]
+Proceding with termination of i-0624c25c58820f3bf
+Processing account : 2
+Assuming role
+Instance Name : dtest3 ; Instance Id : i-013db3cc3fe34604b ; Instance state : 16
+Instance is running, shutting down prior to creating snapshot(s) of attached volume(s)
+Instance i-013db3cc3fe34604b has shutdown successfully
+Checking volumes attached to [&#39;i-013db3cc3fe34604b&#39;] for Termination settings
+deleteontermination check : EBS will be deleted, no change required
+deleteontermination check : EBS is not set to delete on termination, lets fix that
+deleteontermination check : EBS is not set to delete on termination, lets fix that
+deleteontermination check : EBS is not set to delete on termination, lets fix that
+Processing volumes attached to i-013db3cc3fe34604b for snapshot
+Waiting for [&#39;snap-009df192e5f81bc55&#39;, &#39;snap-0ce2c45da6667dd6f&#39;, &#39;snap-01e2cded42c045d44&#39;, &#39;snap-085152d1458e55fa1&#39;]
+Proceding with termination of i-013db3cc3fe34604b
+Instance Name : dtest4 ; Instance Id : i-042b3f3c62782d80a ; Instance state : 16
+Instance is running, shutting down prior to creating snapshot(s) of attached volume(s)
+Instance i-042b3f3c62782d80a has shutdown successfully
+Checking volumes attached to [&#39;i-042b3f3c62782d80a&#39;] for Termination settings
+deleteontermination check : EBS will be deleted, no change required
+deleteontermination check : EBS is not set to delete on termination, lets fix that
+Processing volumes attached to i-042b3f3c62782d80a for snapshot
+Waiting for [&#39;snap-00e3a33ef15cb4537&#39;, &#39;snap-0886e3351306f75c7&#39;]
+Proceding with termination of i-042b3f3c62782d80a
+Terminated : [&#39;i-0550d3810abdcced0&#39;, &#39;i-0624c25c58820f3bf&#39;, &#39;i-013db3cc3fe34604b&#39;, &#39;i-042b3f3c62782d80a&#39;]
+Failed to Terminate : []
+</code></pre></td></tr></table>
+</div>
+</div><h2 id=conclusion>Conclusion</h2>
+<p>So to wrap up. We have executed a python script which retrieves AWS EC2 instances across multiple AWS Accounts assuming roles where required. The instances are shutdown, snapshots taken and then terminated. EBS volume attributes are updated to ensure they are deleted as well.</p>
+<p>I plan on documented my Terraform Jenkins deployment at some point, this may be a good execution script for testing.</p>
+<p><a href=https://github.com/daveihart/python-aws-terminate-ec2>Here</a> is a link to my GitHub repo containing the source code. Have a play around (carefully). Feel free to throw any question across.</p>
+<p>Till next time.</p>
+<p><strong>Disclaimer: This script is designed to terminate ec2 instances. Use at your own risk!</strong></p>
+</div>
+<footer class=post-footer>
+<div class=post-tags>
+<a href=https://davehart.co.uk/tags/aws/>AWS</a>
+<a href=https://davehart.co.uk/tags/aws/>AWS</a>
+<a href=https://davehart.co.uk/tags/blog/>Blog</a>
+<a href=https://davehart.co.uk/tags/boto3/>boto3</a>
+<a href=https://davehart.co.uk/tags/deleteontermination/>deleteontermination</a>
+<a href=https://davehart.co.uk/tags/ec2/>ec2</a>
+<a href=https://davehart.co.uk/tags/github/>GitHub</a>
+<a href=https://davehart.co.uk/tags/github/>GitHub</a>
+<a href=https://davehart.co.uk/tags/python/>python</a>
+<a href=https://davehart.co.uk/tags/python/>python</a>
+<a href=https://davehart.co.uk/tags/snapshot/>snapshot</a>
+<a href=https://davehart.co.uk/tags/tags/>tags</a>
+<a href=https://davehart.co.uk/tags/waiters/>waiters</a>
+</div>
+<nav class=post-nav>
+<a class=prev href=/post/ec2-inventory-using-aws-lambda-and-python/>
+<i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18"><path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417l277.93508-310.326815c11.338233-12.190647 11.035334-32.285311-.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"/></svg>
+</i>
+<span class="prev-text nav-default">EC2 inventory using AWS Lambda and Python</span>
+<span class="prev-text nav-mobile">Prev</span>
+</a>
+<a class=next href=/post/terraform-aws-and-wordpress-part-ii/>
+<span class="next-text nav-default">Terraform, AWS and WordPress – Part II</span>
+<span class="prev-text nav-mobile">Next</span>
+<i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18"><path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697c-11.777231-11.500939-30.216186-10.304694-41.178865 2.712784z"/></svg>
+</i>
+</a>
+</nav>
+</footer>
+</article>
+</div>
+</div>
+</main>
+<footer id=footer class=footer>
+<div class=icon-links>
+<a href=http://localhost:1313 rel="me noopener" class=iconfont title=twitter target=_blank><svg class="icon" viewBox="0 0 1264 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M1229.8616 18.043658s-117.852626 63.135335-164.151872 67.344358C960.484169-78.763856 560.627046-7.210476 627.971403 308.466201 278.622548 312.675223 89.216542 47.506814 89.216542 47.506814S-28.636084 236.91282 164.978944 392.646647C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042 50.5082679999998-16.83609 134.688715-143.10676 134.688715-143.10676s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"/></svg>
+</a>
+<a href=http://localhost:1313 rel="me noopener" class=iconfont title=linkedin target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="33" height="33"><path d="M872.405333 872.618667H720.768V635.008c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333.0-91.136 61.653333-91.136 125.397334v241.792H398.976V384H544.64v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667.0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667.0 01-88.021333-88.106666A88.064 88.064.0 11227.712 317.141333zm76.032 555.477334H151.68V384h152.064v488.618667zM948.266667.0h-872.704C33.792.0.0 33.024.0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667.0 948.138667.0h.128z"/></svg>
+</a>
+<a href=http://localhost:1313 rel="me noopener" class=iconfont title=github target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M512 12.672c-282.88.0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667.0-12.16-.426667-44.373333-.64-87.04C242.005334 929.664 211.968 830.08 211.968 830.08 188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333.0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333.0.0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667.0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72.0 68.522667-.64 123.562667-.64 140.202666.0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"/></svg>
+</a>
+<a href=https://davehart.co.uk/index.xml rel="noopener alternate" type=application/rss+xml class=iconfont title=rss target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30"><path d="M819.157333 1024C819.157333 574.592 449.408 204.8.0 204.8V0c561.706667.0 1024 462.293333 1024 1024H819.157333zM140.416 743.04a140.8 140.8.0 01140.501333 140.586667A140.928 140.928.0 01140.074667 1024C62.72 1024 0 961.109333.0 883.626667S62.933333 743.082667 140.416 743.04zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667v-199.04c372.352.0 678.784 306.517333 678.784 678.826667z"/></svg>
+</a>
+</div>
+<div class=copyright>
+<span class=power-by>
+Powered by <a class=hexo-link href=https://gohugo.io>Hugo</a>
+</span>
+<span class=division>|</span>
+<span class=theme-info>
+Theme - <a class=theme-link href=https://github.com/xianmin/hugo-theme-jane>Jane</a>
+</span>
+<span class=copyright-year>
+&copy;
+2020 -
+2021
+<span class=heart>
+<i class=iconfont><svg class="icon" viewBox="0 0 1025 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="14" height="14"><path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7.0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1.0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2.0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3.1-42.5-8-83.6-24-122.2z" fill="#8a8a8a"/></svg>
+</i>
+</span><span class=author>
+Dave
+</span></span>
+</div>
+</footer>
+<div class=back-to-top id=back-to-top>
+<i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="35" height="35"><path d="M510.866688 227.694839 95.449397 629.218702h235.761562L329.15309 958.01517h362.40389L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777h894.052392v131.813095H63.840492V63.962777zm0 0"/></svg>
+</i>
+</div>
+</div>
+<script type=text/javascript src=/lib/jquery/jquery-3.2.1.min.js></script>
+<script type=text/javascript src=/lib/slideout/slideout-1.0.1.min.js></script>
+<script type=text/javascript src=/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin=anonymous></script>
+<script type=text/javascript src=/js/load-photoswipe.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe.min.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe-ui-default.min.js></script>
+</body>
+</html>
