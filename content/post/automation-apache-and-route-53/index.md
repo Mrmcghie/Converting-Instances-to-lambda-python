@@ -26,7 +26,7 @@ Process Flow
 
 This is what the processing would look like
 
-![](/image//2020/12/image2.png)
+{{< figure src="image2.png" >}}
 
 Setting the scene
 -----------------
@@ -40,14 +40,14 @@ AWS Roles
 
 A role was created to allow the apache server access to manage AWS Route 53. This was attached to the ec2 instance hosting the apache service.
 
-```
+```json
 {
     "Version": "2012-10-17",
-    "Statement": \[
+    "Statement": [
         {
             "Sid": "VisualEditor0",
             "Effect": "Allow",
-            "Action": \[
+            "Action": [
                 "route53:ListTrafficPolicyInstances",
                 "route53:GetTrafficPolicyInstanceCount",
                 "route53:GetChange",
@@ -82,10 +82,10 @@ A role was created to allow the apache server access to manage AWS Route 53. Thi
                 "route53:GetGeoLocation",
                 "route53:GetHostedZoneLimit",
                 "route53:GetTrafficPolicy"
-            \],
-            "Resource": "\*"
+            ],
+            "Resource": "*"
         }
-    \]
+    ]
 }
 ```
 
@@ -98,13 +98,13 @@ The new key pair was generated using ssh-keygen. The public key generated was th
 
 Generate a public and private key pair.
 
-![](/image//2021/01/image-21.png)
+{{< figure src="image-21.png" >}}
 
-Once we have our key pair we need to copy the public part (filename.pub) into the ~/.ssh/authorized\_keys file
+Once we have our key pair we need to copy the public part (filename.pub) into the ~/.ssh/authorized_keys file
 
-![](/image//2021/01/image-31.png)
+{{< figure src="image-31.png" >}}
 
-![](/image//2021/01/image-41.png)
+{{< figure src="image-41.png" >}}
 
 In the above screenshot you can see the default public key for the user and the newly generated example key. The private part of the key can now be passed to the deployment team for them to use in their pipeline.
 
@@ -119,19 +119,19 @@ As mentioned I wanted to pass variables from the gocd pipeline server to the apa
 
 SendEnv is one of the many ssh options. The manual defines it as ;
 
-![](/image//2021/01/image-60.png)
+{{< figure src="image60.png" >}}
 
 That makes it so clear!
 
-So to set this up I had to update the sending server (gocd agent) /etc/ssh/ssh\_config and the receiving server (apache) /etc/ssh/sshd\_config
+So to set this up I had to update the sending server (gocd agent) /etc/ssh/ssh\_config and the receiving server (apache) /etc/ssh/sshd_config
 
-/etc/ssh/ssh\_config
+/etc/ssh/ssh_config
 
 ```
 SendEnv var1 var2 var3
 ```
 
-/etc/ssh/sshd\_config
+/etc/ssh/sshd_config
 
 ```
 AcceptEnv var1 var2 var3
@@ -139,13 +139,13 @@ AcceptEnv var1 var2 var3
 
 So any environment variables defined in the pipeline following the names could be passed across
 
-![](/image//2021/01/image-70.png)
+{{< figure src="image-70.png" >}}
 
 And then the task configuration
 
-![](/image//2021/01/image-80.png)
+{{< figure src="image-80.png" >}}
 
-All environment variables prefixed with DEMO\_URL\_ will be passed to the ssh target
+All environment variables prefixed with DEMO_URL_ will be passed to the ssh target
 
 Script
 ------
@@ -156,20 +156,20 @@ So lets take a look at the shell script. Similar to my previous scripts we break
 
 This is where we reassign the environment variables sent from the gocd agent using SendEnv. We also perform some concatenation of values which we will use later in the script. Note that my environment was pretty static so I did hardcode a number of the AWS parameters used for Route 53. All of these could be defined as pipeline variables.
 
-```
+```bash
 #!/bin/bash
 #Local declarations based on Env variables passed from gocd agent server
-sudo application=${DEMO\_URL\_APPLICATION,,}
-envcode=${DEMO\_URL\_ENVCODE,,}
-internalhostname=${DEMO\_URL\_INTERNALHOSTNAME,,}
-internalport=$DEMO\_URL\_INTERNALPORT
+sudo application=${DEMO_URL_APPLICATION,,}
+envcode=${DEMO_URL_ENVCODE,,}
+internalhostname=${DEMO_URL_INTERNALHOSTNAME,,}
+internalport=$DEMO_URL_INTERNALPORT
 type="https"
-##### Calculated variablees####################
-ProxyPass=$type"://"$internalhostname":"$internalport"/"
-ProxyPassReverse=$type"://"$internalhostname":"$internalport"/"
+##### Calculated variables####################
+ProxyPass=$type":"$internalhostname":"$internalport"/"
+ProxyPassReverse=$type":"$internalhostname":"$internalport"/"
 #####   start - static variables    #####
-supp\_apps=("first\_app" "second\_app" "third\_app") # Used to validate supported rule is being defined
-dt=\`date +%F"-"%H"-"%M\`
+supp\_apps=("first_app" "second_app" "third_app") # Used to validate supported rule is being defined
+dt=`date +%F"-"%H"-"%M`
 # Details for AWS Route53
 ip="0.0.0.0" # External IP used for Route53 to redirect traffic
 type="A"
@@ -177,7 +177,6 @@ ttl=300
 hostedzoneid="XXXXXXXXXXXXXXXXX" # Your AWS Hosted Zone id
 dnssuffix=".example.com"    #suffix to add to entry
 comment="Programmatically created DNS Entry for "$record" created on "$dt
-#
 checkpath="/etc/httpd/conf.d/"
 initialrecord=$envcode$application
 
@@ -190,16 +189,16 @@ Functions
 
 This function ensures the inputs (variables) provided are valid so they process can successfully finish. It first checks if the application type is valid as it relies on this to define which rewrite template to use. Secondly it check to ensure the port is valid as far as it being numeric. You could validate this further by defining an allowed port range. Next it will check if there is an environment code and lastly has an internal hostname be provided. All of these inputs are required to deploy the configuration.
 
-```
-function validate\_app
+```bash
+function validate_app
 {
     echo "Checking if application name "$application" is valid"
-    if ( IFS=$'\\n'; echo "${supp\_apps\[\*\]}" ) | grep -qFx "$application"; then
+    if ( IFS=$'n'; echo "${supp_apps[*]}" ) | grep -qFx "$application"; then
         echo "found application "$application" in approved list, continuing"
     else
         echo "error : "$application" was not found in the list of approved applications"
         echo "Approved applications are : "
-        for eachapp in "${supp\_apps\[@\]}"
+        for eachapp in "${supp_apps[@]}"
             do
                 echo $eachapp
             done
@@ -208,21 +207,21 @@ function validate\_app
     fi
 	echo "Validating port is a number"
 		ncheck='^\[0-9\]+$'
-		if ! \[\[ $internalport =~ $ncheck \]\] ; then
+		if ! [[ $internalport =~ $ncheck ]] ; then
 			echo "error : port provided is not a number! exiting..."
 			exit 1
 		else
 			echo "Port is a number, continuing"
 		fi
 	echo "Checking that an environment has been provided"
-		if \[ -z "$envcode" \] ; then
+		if [ -z "$envcode" ] ; then
 			echo "error: No environment code has been provided! exiting..."
 			exit 1
 		else
 			echo "Environment code has been provided, continuing"
 		fi
 	echo "Checking that an internal hostname has been provided"
-		if \[ -z "$internalhostname" \] ; then
+		if [ -z "$internalhostname" ] ; then
 			echo "error: No internal hostname has been provided! exiting..."
 			exit 1
 		else
