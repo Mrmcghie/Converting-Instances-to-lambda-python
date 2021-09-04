@@ -39,9 +39,9 @@ To ensure the code can easily be re-used, all the key elements are variables. Th
 |arole | role name to assume |
 | attributes | **(comma separated list)** e.g. OwnerId,InstanceId,InstanceType |
 | tags | **(comma separated list)** e.g. Name,Project,Release,Environment,CostCentre |
-| aws\_accounts | **(comma separated list)** e.g. 1111111111111,2222222222222,3333333333333 |
-| bucket\_name | name of bucket e.g. reporting\_test\_bucket |
-| output\_path | folder within the bucket where the report will be held. E.g. ec2\_reports |
+| aws_accounts | **(comma separated list)** e.g. 1111111111111,2222222222222,3333333333333 |
+| bucket_name | name of bucket e.g. reporting_test_bucket |
+| output_path | folder within the bucket where the report will be held. E.g. ec2\_reports |
 
 Flow Chart
 ----------
@@ -85,7 +85,7 @@ values_list = os.environ['attributes']
 formatting_values = values_list.split(",")
 tags_list = os.environ['tags']
 formatted_tags = tags_list.split(",")
-bucket_name = os.environ\['bucket\_name']
+bucket_name = os.environ['bucket_name']
 dt=date.today()
 dtstr=dt.strftime("%Y%m%d")
 s3_output_file=output_path +"/"+"ec2_report_"+dtstr+".csv"
@@ -217,7 +217,7 @@ def report_writer(processing_acc,instances,attrib_set,tag_set):
 The lambda\_handler is what AWS Lambda invokes when the script is executed. This is the main function which when called will invoke the preceding functions.
 
 ```python
-def lambda\handler(event, context):
+def lambda_handler(event, context):
     global ec2
     global attrib_set
     global tag_set
@@ -374,7 +374,7 @@ Please use the following steps to define a schedule trigger to generate the log 
 
 1.  On the AWS Console, navigate to CloudWatch Amazon EventBridge. Then select the Events | Rules
 2.  Select the Create Rule button
-3.  Select the schedule radio button and define your schedule. We used a cron expression 00 03 ? \* \* \* This executed the code at 3am everyday of the week
+3.  Select the schedule radio button and define your schedule. We used a cron expression 00 03 ? * * * This executed the code at 3am everyday of the week
 4.  Select the add target button
 5.  Choose Lambda function and then select your function from the drop down list
 6.  Select the Configure details button
@@ -393,7 +393,7 @@ To test your AWS Lambda function without using the event trigger, configure a te
 
 This one always pops up when I develop code to run on AWS Lambda
 
-{{< figure src="/image/image-28.png" >}}
+{{< figure src="image-28.png" >}}
 
 The key entry in that above screenshot is **Timeout** (actually they are all important this is just the one which will catch you out). The default value is 3 seconds. Consider that this function is describing instances across multiple accounts. The amount of time it takes is going to depend on many factors such as geographical locations, amount of instances to retrieve, number of accounts to gather from. That's just a few off the top of my head, I am sure there are more. The maximum timeout is 900 seconds so you will need to split the functions if this is not sufficient.
 
