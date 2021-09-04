@@ -1,4 +1,4 @@
-baseURL = 'https://daveihart.github.io/davehart.co.uk/'
+baseURL = 'https://daveihart.co.uk'
 languageCode = 'en-us'
 title = "Dave's DevOps blog"
 enableRobotsTXT = true
@@ -95,7 +95,7 @@ defaultContentLanguage = "en"           # Default language to use
 
   [params.social]                                        
     a-twitter = "https://twitter.com/daveihart"
-    b-linkedin = "https://twitter.com/daveihart"
+    b-linkedin = "https://www.linkedin.com/in/dave-hart/"
     c-github = "https://github.com/daveihart"
 
 [imaging]
