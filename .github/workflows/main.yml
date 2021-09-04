@@ -30,4 +30,5 @@ jobs:
         uses: chabad360/hugo-gh-pages@master
         with:
           githubToken: ${{ secrets.PERSONAL_TOKEN }}
+          cname: davehart.co.uk
           #siteDIR: /docs
