@@ -94,9 +94,9 @@ defaultContentLanguage = "en"           # Default language to use
   customJS = []             # if ['custom.js'], load '/static/js/custom.js' file
 
   [params.social]                                        
-    a-twitter = "http://localhost:1313"
-    b-linkedin = "http://localhost:1313"
-    c-github = "http://localhost:1313"
+    a-twitter = "https://twitter.com/daveihart"
+    b-linkedin = "https://twitter.com/daveihart"
+    c-github = "https://github.com/daveihart"
 
 [imaging]
 # Default resample filter used for resizing. Default is Box,
