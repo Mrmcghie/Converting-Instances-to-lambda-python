@@ -293,7 +293,7 @@ from datetime import date
 <span class=n>formatting_values</span> <span class=o>=</span> <span class=n>values_list</span><span class=o>.</span><span class=n>split</span><span class=p>(</span><span class=s2>&#34;,&#34;</span><span class=p>)</span>
 <span class=n>tags_list</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span><span class=p>[</span><span class=s1>&#39;tags&#39;</span><span class=p>]</span>
 <span class=n>formatted_tags</span> <span class=o>=</span> <span class=n>tags_list</span><span class=o>.</span><span class=n>split</span><span class=p>(</span><span class=s2>&#34;,&#34;</span><span class=p>)</span>
-<span class=n>bucket_name</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span>\<span class=p>[</span><span class=s1>&#39;bucket\_name&#39;</span><span class=p>]</span>
+<span class=n>bucket_name</span> <span class=o>=</span> <span class=n>os</span><span class=o>.</span><span class=n>environ</span><span class=p>[</span><span class=s1>&#39;bucket_name&#39;</span><span class=p>]</span>
 <span class=n>dt</span><span class=o>=</span><span class=n>date</span><span class=o>.</span><span class=n>today</span><span class=p>()</span>
 <span class=n>dtstr</span><span class=o>=</span><span class=n>dt</span><span class=o>.</span><span class=n>strftime</span><span class=p>(</span><span class=s2>&#34;%Y%m</span><span class=si>%d</span><span class=s2>&#34;</span><span class=p>)</span>
 <span class=n>s3_output_file</span><span class=o>=</span><span class=n>output_path</span> <span class=o>+</span><span class=s2>&#34;/&#34;</span><span class=o>+</span><span class=s2>&#34;ec2_report_&#34;</span><span class=o>+</span><span class=n>dtstr</span><span class=o>+</span><span class=s2>&#34;.csv&#34;</span>
@@ -548,7 +548,7 @@ from datetime import date
 </span><span class=lnt>43
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=k>def</span> <span class=nf>lambda</span>\<span class=n>handler</span><span class=p>(</span><span class=n>event</span><span class=p>,</span> <span class=n>context</span><span class=p>):</span>
+<pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=k>def</span> <span class=nf>lambda_handler</span><span class=p>(</span><span class=n>event</span><span class=p>,</span> <span class=n>context</span><span class=p>):</span>
     <span class=k>global</span> <span class=n>ec2</span>
     <span class=k>global</span> <span class=n>attrib_set</span>
     <span class=k>global</span> <span class=n>tag_set</span>
@@ -787,7 +787,7 @@ from datetime import date
 </div><h4 id=aws-lambda-settings>AWS Lambda settings</h4>
 <p>This one always pops up when I develop code to run on AWS Lambda</p>
 <figure>
-<img src=/image/image-28.png>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/image-28_hue66d0fa49636bf6aefdb19175e388521_17456_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/ec2-inventory-using-aws-lambda-and-python/image-28.png>
 </figure>
 <p>The key entry in that above screenshot is <strong>Timeout</strong> (actually they are all important this is just the one which will catch you out). The default value is 3 seconds. Consider that this function is describing instances across multiple accounts. The amount of time it takes is going to depend on many factors such as geographical locations, amount of instances to retrieve, number of accounts to gather from. That&rsquo;s just a few off the top of my head, I am sure there are more. The maximum timeout is 900 seconds so you will need to split the functions if this is not sufficient.</p>
 <h2 id=planned-enhancements>Planned enhancements</h2>
