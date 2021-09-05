@@ -187,7 +187,7 @@ def assume_roles(acc,accounts,arole):
 Another blatant re-use, handy this ;) Once you have worked out the AWS account security settings , you can start retrieving the EC2 instances for processing. The EC2 instances retrieved are filtered to only retrieve instances matching the **search_tag** and **search_value**. These are then added to a list for further processing.
 
 ```python
-def get\instances(process_acc,filters=[{'Name': 'tag:'+search_tag, 'Values': [search_value]}]):
+def get_instances(process_acc,filters=[{'Name': 'tag:'+search_tag, 'Values': [search_value]}]):
     reservations = {}
     try:
         reservations = ec2.describe_instances(
@@ -206,29 +206,29 @@ def get\instances(process_acc,filters=[{'Name': 'tag:'+search_tag, 'Values': [se
 
 This is the function which justified its own flowchart above. All of the processing of the EC2 instance is performed within this function and it makes all the calls to the functions which handle the snapshots, detaching, attaching etc.
 
-```
-def process\_instance(Iname):
+```python
+def process_instance(Iname):
     global volatt
     global volid
-    global tags\_list
+    global tags_list
     global Istate
     global IstateCode
-    processed\_status = "no"    #set a value to establish if the instance state has been retrieved
+    processed_status = "no"    #set a value to establish if the instance state has been retrieved
     Istate = inst.get('State')  
     IstateCode = Istate.get('Code')
-    get\_status(Iid)
+    get_status(Iid)
     if verbose:
-        print(f"Instance Name : {Iname} ; Instance Id : {Iid\[0\]} ; Instance state : {IstateCode}")
-        print(f"Checking volumes attached to {Iid\[0\]} for encryption settings")
-    vols = ec2.describe\_volumes(
-        Filters=\[
+        print(f"Instance Name : {Iname} ; Instance Id : {Iid[0]} ; Instance state : {IstateCode}")
+        print(f"Checking volumes attached to {Iid[0]} for encryption settings")
+    vols = ec2.describe_volumes(
+        Filters=[
         {
             'Name': 'attachment.instance-id',
-            'Values': \[
-                str(Iid\[0\]),
-           \],
+            'Values': [
+                str(Iid[0]),
+           ],
         },
-        \],
+        ],
     )
     x = 0
     for dev in vols.get('Volumes'):    #Loop through each EBS volumes attached to the EC2 instance
@@ -242,40 +242,40 @@ def process\_instance(Iname):
             if verbose:
                 print(f"volumeid :      {volid}")
                 print(f"attachment :    {att}")
-            volatt = att\[0\].get('Device')
+            volatt = att[0].get('Device')
             if encstatus == False:   #its not encrypted so lets sort that out, its why we are here :)
                 if verbose:
                     print(f"Volume will need to be encrypted")
-                if initial\_status == "running" and processed\_status == "no":   #if the instance is running, shut it down. You only want to do this once and not iterate through it with each volume
+                if initial_status == "running" and processed_status == "no":   #if the instance is running, shut it down. You only want to do this once and not iterate through it with each volume
                     if verbose:
-                        print(f"shutting down {Iid\[0\]}")
-                    shutdown\_instance(Iid)  #call the shutdown instance function
-                    processed\_status = "yes"   #set it as processed so we don't try shut it down again for the next volume
-                tags\_list = dev.get('Tags', \[\])   #We need the tags to add them to the new encrypted volume
+                        print(f"shutting down {Iid[0]}")
+                    shutdown_instance(Iid)  #call the shutdown instance function
+                    processed_status = "yes"   #set it as processed so we don't try shut it down again for the next volume
+                tags_list = dev.get('Tags', [])   #We need the tags to add them to the new encrypted volume
                 moveon="no"
-                while not Iid\[0\] in FailedIid and moveon == "no":   #step through this section until one of two things happen. The instance is added to the failure list or we set moveonto yes
-                    detach\_old\_ebs()   #function to detach the old EBS volume
-                    snapshot\_volumes()   #function to create the unencrypted snapshot
-                    snapshot\_copy()   #function to create an encrypted copy of the unencrypted snapshot and delete the unencrypted snapshot
-                    create\_ebs()   #function to create an encrypted EBS volume from the encrypted snapshot
-                    attach\_new\_ebs()   #attach the new encrypted EBS volume
-                    set\_delete\_terminate()   #for good messure set the deleteonterminate flag to true
-                    delete\_ebs()   #delete the old unencrypted ebs
+                while not Iid[0] in FailedIid and moveon == "no":   #step through this section until one of two things happen. The instance is added to the failure list or we set moveonto yes
+                    detach_old_ebs()   #function to detach the old EBS volume
+                    snapshot_volumes()   #function to create the unencrypted snapshot
+                    snapshot_copy()   #function to create an encrypted copy of the unencrypted snapshot and delete the unencrypted snapshot
+                    create_ebs()   #function to create an encrypted EBS volume from the encrypted snapshot
+                    attach_new_ebs()   #attach the new encrypted EBS volume
+                    set_delete_terminate()   #for good messure set the deleteonterminate flag to true
+                    delete_ebs()   #delete the old unencrypted ebs
                     moveon="yes"   #flag to exit the while loop
             else:
                 if verbose:
                     print(f"{volid} is already encrypted")
         except botocore.exceptions.ClientError as er:   #capture and output any exceptions
             print("error on check\_volumes")
-            print(er.response\['Error'\]\['Message'\])
-            FailedIid.append(Iid\[0\])
-    if initial\_status == "running":
+            print(er.response['Error']['Message'])
+            FailedIid.append(Iid[0])
+    if initial_status == "running":
         if verbose:
-            print(f"starting instance {Iid\[0\]}")
-        start\_instance(Iid)   #if the instance was running when we started processing, start it back up
+            print(f"starting instance {Iid[0]}")
+        start_instance(Iid)   #if the instance was running when we started processing, start it back up
     else:   #the EC2 instance was stopped when we started. We got this far so lets mark it as a success.
-        if not Iid\[0\] in FailedIid:
-            SuccessIid.append(Iid\[0\])
+        if not Iid[0] in FailedIid:
+            SuccessIid.append(Iid[0])
 ```
 
 The next few functions are all called by the preceding function so I will try keep them in a logical order starting of with retrieving the EC2 instances run state.
