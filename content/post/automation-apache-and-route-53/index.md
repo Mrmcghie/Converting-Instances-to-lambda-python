@@ -1,7 +1,7 @@
 ---
 title: 'Automation: Apache and Route 53'
 date: Fri, 15 Jan 2021 16:04:10 +0000
-draft: true
+draft: false
 tags: ['Amazon Linux', 'apache', 'Apache', 'AWS', 'AWS', 'Blog', 'cli', 'cli', 'GitHub', 'linux', 'route53', 'shell', 'shellscript']
 author: "Dave"
 toc: true
@@ -119,7 +119,7 @@ As mentioned I wanted to pass variables from the gocd pipeline server to the apa
 
 SendEnv is one of the many ssh options. The manual defines it as ;
 
-{{< figure src="image60.png" >}}
+{{< figure src="image-60.png" >}}
 
 That makes it so clear!
 
@@ -185,7 +185,7 @@ initialrecord=$envcode$application
 Functions
 ---------
 
-### validate\_app
+### validate_app
 
 This function ensures the inputs (variables) provided are valid so they process can successfully finish. It first checks if the application type is valid as it relies on this to define which rewrite template to use. Secondly it check to ensure the port is valid as far as it being numeric. You could validate this further by defining an allowed port range. Next it will check if there is an environment code and lastly has an internal hostname be provided. All of these inputs are required to deploy the configuration.
 
@@ -230,7 +230,7 @@ function validate_app
 }
 ```
 
-### build\_record
+### build_record
 
 As each environment might have multiple deployments of an application, it was necessary to check what was already configured and then programmatically define the next value. This could have been an environment variable but this method removed possible human error.
 
@@ -240,33 +240,33 @@ The checks are performed against an array which is populated with all of the rec
 
 As an example if could build out the name;
 
-z1first\_app it would add 01 to the end and check for a record z1first\_app01. If this does not already exist the value will be used to build out the FQDN otherwise it will increment by one until it finds a free value. This occurs a max. 20 times.
+z1first_app it would add 01 to the end and check for a record z1first_app01. If this does not already exist the value will be used to build out the FQDN otherwise it will increment by one until it finds a free value. This occurs a max. 20 times.
 
-```
-function build\_record
+```bash
+function build_record
 {
     #build the A record based on the provided variables calculating the next available address
     found=""
-    rec\_count=0
-    existing\_rec\_array=()
+    rec_count=0
+    existing_rec_array=()
     echo "Records to search Route53 : $initialrecord"
-    all\_records=(\`aws route53 list-resource-record-sets --hosted-zone-id $hostedzoneid --output text --query "ResourceRecordSets\[\*\].Name"\`)
-    echo "Route53 has ${#all\_records\[@\]} registered A Records for $dnssuffix"
-    if \[ ${#all\_records\[@\]} -gt 0 \]; then
+    all_records=(`aws route53 list-resource-record-sets --hosted-zone-id $hostedzoneid --output text --query "ResourceRecordSets[*].Name"`)
+    echo "Route53 has ${#all_records[@]} registered A Records for $dnssuffix"
+    if [ ${#all_records[@]} -gt 0 ]; then
         #echo "Identifying existing records with similar prefix for processing"
-        for record in "${all\_records\[@\]}"
+        for record in "${all_records[@]}"
         do
 		#echo $record" is being checked!"
-            if \[\[ "$record" == \*"$initialrecord"\* \]\]; then
+            if [[ "$record" == "$initialrecord" ]]; then
                 #echo $record" already exists"
-                existing\_rec\_array+=($record)
+                existing_rec_array=($record)
                 found="yes"
-                rec\_count=$(($rec\_count+1))
+                rec_count=$(($rec_count+1))
             fi
         done
     fi
 	#echo "Found variable set as "$found
-    if \[ "$found" = "" \]; then
+    if [ "$found" = "" ]; then
         #echo "No records found for $initialrecord"
         record=$initialrecord"01"
         checkurl=$record$dnssuffix
@@ -274,16 +274,16 @@ function build\_record
     else
 		# There are records following this name, step through and work out available suffix
         available=""
-        available\_count=1
-        while \[\[ "$available" != "true" && "$available\_count" -le 20 \]\];
+        available_count=1
+        while [[ "$available" != "true" && "$available_count" -le 20 ]];
             do
-                printf -v pad\_available\_count "%02d" $available\_count
+                printf -v pad_available_count "%02d" $available_count
                 #build the string to check for
-                checkurl=$initialrecord$pad\_available\_count$dnssuffix
-                checkurlprefix=$initialrecord$pad\_available\_count
+                checkurl=$initialrecord$pad_available_count$dnssuffix
+                checkurlprefix=$initialrecord$pad_available_count
                 checkurldot=$checkurl"."
                 echo "Checking if "$checkurl" is available"
-                if ( IFS=$'\\n'; echo "${existing\_rec\_array\[\*\]}" ) | grep -qFx "$checkurldot"; then
+                if ( IFS=$'\n'; echo "${existing_rec_array[*]}" ) | grep -qFx "$checkurldot"; then
                     echo "found existing A record for "$checkurl" , skipping"
                 else
                     echo "Did not find any existing A record for "$checkurl
@@ -291,41 +291,40 @@ function build\_record
                     record=$checkurlprefix
                     available="true"
                 fi
-                available\_count=$(($available\_count+1))
+                available_count=$(($available_count+1))
             done
     fi
 }
 ```
 
-### check\_conf\_d
+### check_conf_d
 
 This is a secondary check to ensure there are not any orphaned apache configurations. It is possible a free record could be calculated for Route53 and then an existing configuration file exists. Worth a manual check then.
 
 If an existing conf file is located the pipeline exits.
 
-```
-function check\_conf\_d
+```bash
+function check_conf_d
 {
     #ensure there are no existing configuration files with this name. Existing suggests an orphaned file as the names should match a route53 rule
     checkfile=$checkpath$checkurlprefix".conf"
     echo "Checking for existing conf file "$checkfile
-    if \[ -f "$checkfile" \]; then
+    if [ -f "$checkfile" ]; then
         echo "There is already a config file for this rule. Please advise team to check for orphaned configuration files. Exiting!"
         exit 1
     else
         echo "No existing conf files for "$checkurlprefix" , continuing"
     fi
-
 }
 ```
 
-### update\_route53
+### update_route53
 
 When using the AWS cli to add a Route53 A record it uses a JSON-formatted configuration file to provide the required configuration. With this requirement the first part of this function created a temporary .json file and populates it with values from either the environment variables or calculated values from previous steps.
 
 Next the function will backup the existing Route53 records and then use the temporary .json file to create the new A-record. Finally the temporary .json file is removed
 
-```
+```bash
 function update\_route53
 {
     # First generate a json file with required details as Route53 cli uses this as the input stream
@@ -359,19 +358,19 @@ rm -f $TMPFILE
 }
 ```
 
-### build\_proxy\_rule
+### build_proxy_rule
 
 This function will build out the .conf file used by the apache server for the rewrite rule. Different rules are defined depending on which application type is being processes. Additional rules can be added in this function if required. The output file is created in the path defined in the checkpath variable (/etc/httpd/conf.d/)
 
-```
-function build\_proxy\_rule
+```bash
+function build_proxy_rule
 {
     echo "creating proxy rule for "$record
     #create a filename
-    conf\_file=$checkpath$record".conf"
-    if \[ "$application" == "first\_app" \] ;then
-        cat > ${conf\_file} << EOF
-<VirtualHost \*:443>
+    conf_file=$checkpath$record".conf"
+    if [ "$application" == "first_app" ] ;then
+        cat > ${conf_file} << EOF
+<VirtualHost *:443>
 ServerName $checkurl
 SSLEngine on
 SSLProxyEngine on
@@ -386,9 +385,9 @@ ProxyPass / $ProxyPass
 ProxyPassReverse / $ProxyPassReverse
 </VirtualHost>
 EOF
-    elif \[ "$application" == "second\_app" \] ;then
-        cat > ${conf\_file} << EOF
-<VirtualHost \*:443>
+    elif [ "$application" == "second_app" ] ;then
+        cat > ${conf_file} << EOF
+<VirtualHost *:443>
 ServerName $checkurl
 SSLEngine on
 SSLProxyEngine on
@@ -404,9 +403,9 @@ ProxyPassReverse / $ProxyPassReverse
 </VirtualHost>
 EOF
     elif
-\[ "$application" == "third\_app" \] ;then
-        cat > ${conf\_file} << EOF
-<VirtualHost \*:443>
+[ "$application" == "third_app" ] ;then
+        cat > ${conf_file} << EOF
+<VirtualHost *:443>
 ServerName      $checkurl
 SSLEngine on
 SSLProxyEngine on
@@ -432,22 +431,22 @@ EOF
 }
 ```
 
-### restart\_service
+### restart_service
 
 This function will restart the httpd service on the apache server. Apache servers only load their configuration when the service starts.
 
 If you are working in a production environment you would be scheduling this to run out of hours either as a separate task in your pipeline or manually agreed in a downtime window. Mine is development so no issues running at pipeline execution.
 
 ```
-function restart\_service
+function restart_service
 {
     echo "Restarting the httpd service"
     sudo httpd -k restart
-    echo "\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*"
+    echo "******************************************************************"
     echo ""
     echo "External URL created : "$checkurl
     echo ""
-    echo "\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*"
+    echo "******************************************************************"
 }
 ```
 
@@ -455,13 +454,13 @@ function restart\_service
 
 Not really a main function as such but just the order of function execution. Located at the bottom of the script.
 
-```
-validate\_app
-build\_record
-check\_conf\_d
-update\_route53
-build\_proxy\_rule
-restart\_service
+```bash
+validate_app
+build_record
+check_conf_d
+update_route53
+build_proxy_rule
+restart_service
 ```
 
 Conclusion
