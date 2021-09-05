@@ -1,0 +1,779 @@
+<!doctype html><html lang=en itemscope itemtype=http://schema.org/WebPage>
+<head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<title>Terraform: Multi-cloud demo – Part 2 – Terraform Remote State on Azure - Dave's DevOps blog</title>
+<meta name=renderer content="webkit">
+<meta name=viewport content="width=device-width,initial-scale=1,user-scalable=yes">
+<meta name=MobileOptimized content="width">
+<meta name=HandheldFriendly content="true">
+<meta name=applicable-device content="pc,mobile">
+<meta name=theme-color content="#f8f5ec">
+<meta name=msapplication-navbutton-color content="#f8f5ec">
+<meta name=apple-mobile-web-app-capable content="yes">
+<meta name=apple-mobile-web-app-status-bar-style content="#f8f5ec">
+<meta name=mobile-web-app-capable content="yes">
+<meta name=author content="Dave">
+<meta name=description content="So we have setup our source control (GitHub) for team collaboration (Part 1) , next we should consider the Terraform state file.
+By Default Terraform will create a local state file (terraform.tfstate), this does not work when collaborating as each person needs to have the latest version of the state data prior to performing any Terraform actions. In addition you need to ensure that nobody else is running Terraform at the same time. Having a remote state helps mitigate these issues.">
+<meta name=keywords content="Hugo,theme,jane">
+<meta name=generator content="Hugo 0.88.0">
+<link rel=canonical href=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/>
+<link rel=icon href=/favicon.ico>
+<link rel=stylesheet href=/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css integrity="sha256-+ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media=screen crossorigin=anonymous>
+<meta property="og:title" content="Terraform: Multi-cloud demo – Part 2 – Terraform Remote State on Azure">
+<meta property="og:description" content="So we have setup our source control (GitHub) for team collaboration (Part 1) , next we should consider the Terraform state file.
+By Default Terraform will create a local state file (terraform.tfstate), this does not work when collaborating as each person needs to have the latest version of the state data prior to performing any Terraform actions. In addition you need to ensure that nobody else is running Terraform at the same time. Having a remote state helps mitigate these issues.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/"><meta property="article:section" content="post">
+<meta property="article:published_time" content="2021-04-03T08:57:31+00:00">
+<meta property="article:modified_time" content="2021-04-03T08:57:31+00:00">
+<meta itemprop=name content="Terraform: Multi-cloud demo – Part 2 – Terraform Remote State on Azure">
+<meta itemprop=description content="So we have setup our source control (GitHub) for team collaboration (Part 1) , next we should consider the Terraform state file.
+By Default Terraform will create a local state file (terraform.tfstate), this does not work when collaborating as each person needs to have the latest version of the state data prior to performing any Terraform actions. In addition you need to ensure that nobody else is running Terraform at the same time. Having a remote state helps mitigate these issues."><meta itemprop=datePublished content="2021-04-03T08:57:31+00:00">
+<meta itemprop=dateModified content="2021-04-03T08:57:31+00:00">
+<meta itemprop=wordCount content="2608">
+<meta itemprop=keywords content="Azure,azure,Blog,demo,GitHub,Remote State,remote-state,Terraform,Terraform,training,"><meta name=twitter:card content="summary">
+<meta name=twitter:title content="Terraform: Multi-cloud demo – Part 2 – Terraform Remote State on Azure">
+<meta name=twitter:description content="So we have setup our source control (GitHub) for team collaboration (Part 1) , next we should consider the Terraform state file.
+By Default Terraform will create a local state file (terraform.tfstate), this does not work when collaborating as each person needs to have the latest version of the state data prior to performing any Terraform actions. In addition you need to ensure that nobody else is running Terraform at the same time. Having a remote state helps mitigate these issues."><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script>
+<script src=https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js></script><![endif]-->
+</head>
+<body>
+<div id=mobile-navbar class=mobile-navbar>
+<div class=mobile-header-logo>
+<a href=/ class=logo>Dave's blog</a>
+</div>
+<div class=mobile-navbar-icon>
+<span></span>
+<span></span>
+<span></span>
+</div>
+</div>
+<nav id=mobile-menu class="mobile-menu slideout-menu">
+<ul class=mobile-menu-list>
+<li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/>Home</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/post/>Posts</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/tags/>Tags</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/privacy/>Privacy Policy</a>
+</li><li class=mobile-menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/about/>About</a>
+</li>
+</ul>
+</nav>
+<link rel=stylesheet href=/lib/photoswipe/photoswipe.min.css>
+<link rel=stylesheet href=/lib/photoswipe/default-skin/default-skin.min.css>
+<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div>
+<div class=pswp__scroll-wrap>
+<div class=pswp__container>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+</div>
+<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__top-bar>
+<div class=pswp__counter></div>
+<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+<div class=pswp__preloader>
+<div class=pswp__preloader__icn>
+<div class=pswp__preloader__cut>
+<div class=pswp__preloader__donut></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div>
+</div>
+<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+</button>
+<div class=pswp__caption>
+<div class=pswp__caption__center></div>
+</div>
+</div>
+</div>
+</div>
+<header id=header class="header container">
+<div class=logo-wrapper>
+<a href=/ class=logo>
+Dave's blog
+</a>
+</div>
+<nav class=site-navbar>
+<ul id=menu class=menu>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/>Home</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/post/>Posts</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/tags/>Tags</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/privacy/>Privacy Policy</a>
+</li>
+<li class=menu-item>
+<a class=menu-item-link href=https://davehart.co.uk/about/>About</a>
+</li>
+</ul>
+</nav>
+</header>
+<div id=mobile-panel>
+<main id=main class="main bg-llight">
+<div class=content-wrapper>
+<div id=content class="content container">
+<article class="post bg-white">
+<header class=post-header>
+<h1 class=post-title>Terraform: Multi-cloud demo – Part 2 – Terraform Remote State on Azure</h1>
+<div class=post-meta>
+<time datetime=2021-04-03 class=post-time>
+2021-04-03
+</time>
+<span class=more-meta> 2608 words </span>
+<span class=more-meta> 13 min read </span>
+</div>
+</header>
+<div class=post-toc id=post-toc>
+<h2 class=post-toc-title>Table of Contents</h2>
+<div class=post-toc-content>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#root-module>Root module</a>
+<ul>
+<li><a href=#maintf>main.tf</a></li>
+<li><a href=#module--azure_remote_state>module : azure_remote_state</a></li>
+</ul>
+</li>
+<li><a href=#root---module>root - module</a>
+<ul>
+<li><a href=#terraform-init>Terraform init</a></li>
+</ul>
+</li>
+<li><a href=#enable-remote-state>Enable remote state</a></li>
+<li><a href=#source-control>Source control</a></li>
+<li><a href=#summary>Summary</a></li>
+</ul>
+</nav>
+</div>
+</div>
+<div class=post-content>
+<p>So we have setup our source control (GitHub) for team collaboration <a href=/post/terraform-multi-cloud-demo-part-1-foundations/>(Part 1)</a> , next we should consider the Terraform state file.</p>
+<p>By Default Terraform will create a local state file (terraform.tfstate), this does not work when collaborating as each person needs to have the latest version of the state data prior to performing any Terraform actions. In addition you need to ensure that nobody else is running Terraform at the same time. Having a remote state helps mitigate these issues.</p>
+<p>There are a number of different locations that Terraform supports for storing remote state, we will look at using Azure Blob Storage in this demonstration (I used terraform cloud in <a href=/post/terraform-aws-wordpress/>this article</a> if you are interested). This natively allows state locking and consistency checking. In addition we will use a SAS token to provide authentication to collaborators.</p>
+<h2 id=root-module>Root module</h2>
+<p>We are going to setup this environment with re-usable repeatable code in mind. The working directory when we start defining our resources, variables and outputs is referred to as the root module. Through this demo we will be using modules from the terraform registry and we will make some of our own. Lets start with the root module;</p>
+<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+</figure>
+<p><em>**Modules are a wrapper around a collection of Terraform resources. Using modules allows you to break your code into smaller blocks which can make reading code easier and aid in troubleshooting. In addition a module allows for easier reuse of code blocks.</em>**</p>
+<p><em>**All modules tend to have the same construct, a main.tf , output.tf and the variables.tf. Terraform will process any file with a .tf extension and it does all the heavy lifting working out the run order, dependencies etc. You could call the files whatever you want but lets standardise.</em>**</p>
+<h3 id=maintf>main.tf</h3>
+<p>First off we need to define our provider, we will be using the <a href=https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs>azurerm</a> provider;</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>provider &#34;azurerm&#34; {
+  features {}
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>Pretty simple. The features part need not have any values but the provider does not work without it declared. I will need to run &lsquo;a_z login_&rsquo; in my console to authenticate with my Azure subscription once I start creating resources but for now that is all we need.</p>
+<p>At this point we could start defining all of our Azure resource blocks but lets drop it all into a module;</p>
+<h3 id=module--azure_remote_state>module : azure_remote_state</h3>
+<p>As mentioned above, code re-use is key so we could take a look at the <a href=https://registry.terraform.io/>terraform registry</a> and see if there is already a module we could use for our azure remote state. Well there is but I am not using it for two reasons. Firstly it does not give me everything I want and secondly it is a good excuse to create our own module and learn something. We will be consuming existing modules from the registry later on in the demo.</p>
+<p>Any module we create needs to be located in a modules/module_name folder in our root module location. The module folder can be called anything you like. For our example we will use &ldquo;remote_state&rdquo;. Under this folder we create the standard constructs (main.tf, variables.tf and output.tf)</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-9.png>
+</figure>
+<p>We will start off in the module main.tf and construct the Azure components we need for our remote state. But first, lets define a terraform configuration in our module. At a minimum we should be specifying the required version based on what we used to develop this example.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>terraform {
+    required_version = &#34;&gt;=0.14.8&#34;
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>Now we can move onto our remote state configuration. The remote state will need;</p>
+<p>Azure resource group > Azure storage account > container in the storage account</p>
+<p>Lets start with the resource group. The section headings will reflect the names defined in the azurerm provider.</p>
+<h4 id=azurerm_resource_group>azurerm_resource_group</h4>
+<p>We need to define a name for the resource group a location and perhaps some tags at a minimum. The values for these should be variables and can be changed on the module calling block in the root main.tf</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=c1># Define the resource group for hosting the storage account
+</span><span class=c1></span><span class=k>resource</span> <span class=s2>&#34;azurerm_resource_group&#34; &#34;demo&#34;</span> {
+<span class=n>  name</span>     <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>rg_name</span><span class=c1>                   # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span><span class=n>  location</span> <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>rg_location</span><span class=c1>               # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span><span class=n>  tags</span> <span class=o>=</span> <span class=k>merge</span><span class=p>(</span>
+    <span class=k>var</span><span class=p>.</span><span class=k>tags</span><span class=p>,</span> {<span class=c1>                            # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span><span class=n>      Name</span> <span class=o>=</span> <span class=s2>&#34;var.rg_name&#34;</span>
+  }<span class=p>)</span>
+}
+</code></pre></td></tr></table>
+</div>
+</div>
+<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+</figure>
+<p><em>**merge Function : We have used the merge function in the tags block. This function will return a single map or object from all arguments. More details <a href=https://www.terraform.io/docs/language/functions/merge.html>here</a>.</em>**</p>
+<p>Seeing as we already require variables defined, we will add them to the modules variables.tf as we go.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>variable</span> <span class=s2>&#34;rg_name&#34;</span> {
+<span class=n>  type</span>    <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span> <span class=o>=</span> <span class=s2>&#34;demo&#34;</span>
+}
+
+<span class=k>variable</span> <span class=s2>&#34;rg_location&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;azure location&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;UK West&#34;</span>
+}
+
+<span class=k>variable</span> <span class=s2>&#34;tags&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;resource tags&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>map</span><span class=p>(</span><span class=k>any</span><span class=p>)</span>
+<span class=n>  default</span> <span class=o>=</span> {}
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>Now we have a resource group to host our resource we can define the storage account.</p>
+<h4 id=azurerm_storage_account>azurerm_storage_account</h4>
+<p>One of the criteria for a Azure storage account is that the name is unique within Azure. No two storage accounts can have the same name. Fortunately Terraform has a random provider, we will use the random_integer resource from this provider to help us generate a random name for our storage account.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>resource</span> <span class=s2>&#34;random_integer&#34; &#34;stacc_num&#34;</span> {
+<span class=n>  min</span> <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>random_min</span><span class=c1>                        # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span><span class=n>  max</span> <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>random_max</span><span class=c1>                        # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span>}
+
+<span class=k>resource</span> <span class=s2>&#34;azurerm_storage_account&#34; &#34;stacc&#34;</span> {
+<span class=n>  name</span>                     <span class=o>=</span> <span class=s2>&#34;${lower(var.stacc_name_prefix)}${random_integer.stacc_num.result}&#34;</span><span class=c1>     # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span><span class=n>  resource_group_name</span>      <span class=o>=</span> <span class=k>azurerm_resource_group</span><span class=p>.</span><span class=k>demo</span><span class=p>.</span><span class=k>name</span>
+<span class=n>  location</span>                 <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>rg_location</span><span class=c1>     # We have already declared this variable
+</span><span class=c1></span><span class=n>  account_tier</span>             <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>acc_tier</span><span class=c1>        # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span><span class=n>  account_replication_type</span> <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>acc_rep_type</span><span class=c1>    # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span>}
+</code></pre></td></tr></table>
+</div>
+</div><p>Lets add the variables;</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>variable</span> <span class=s2>&#34;random_min&#34;</span> {
+<span class=n>    description</span> <span class=o>=</span> <span class=s2>&#34;minimum value for random number range&#34;</span>
+<span class=n>    type</span> <span class=o>=</span> <span class=k>number</span>
+<span class=n>    default</span> <span class=o>=</span> <span class=m>10000</span>
+}
+<span class=k>variable</span> <span class=s2>&#34;random_max&#34;</span> {
+<span class=n>    description</span> <span class=o>=</span> <span class=s2>&#34;maximum value for random number range&#34;</span>
+<span class=n>    type</span> <span class=o>=</span> <span class=k>number</span>
+<span class=n>    default</span> <span class=o>=</span> <span class=m>99999</span>
+}
+<span class=k>variable</span> <span class=s2>&#34;stacc_name_prefix&#34;</span> {
+<span class=n>    description</span> <span class=o>=</span> <span class=s2>&#34;prefix for the azure storage account name - random value will be added as suffix&#34;</span>
+<span class=n>    type</span> <span class=o>=</span> <span class=k>string</span>
+<span class=n>    default</span> <span class=o>=</span> <span class=s2>&#34;example&#34;</span>
+}
+<span class=k>variable</span> <span class=s2>&#34;acc_tier&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;azure storage tier&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;standard&#34;</span>
+}
+<span class=k>variable</span> <span class=s2>&#34;acc_rep_type&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;azure replication type&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;LRS&#34;</span>
+}
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=azurerm_storage_container>azurerm_storage_container</h4>
+<p>The container is used to organise your blobs. Think of it as a directory structure in a file system. There are no limits to the number of containers or the number of blobs a container can store.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>resource</span> <span class=s2>&#34;azurerm_storage_container&#34; &#34;ct&#34;</span> {
+<span class=n>  name</span>                 <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>container_name</span><span class=c1>      # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span><span class=n>  storage_account_name</span> <span class=o>=</span> <span class=k>azurerm_storage_account</span><span class=p>.</span><span class=k>stacc</span><span class=p>.</span><span class=k>name</span>
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>and the variables</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>variable</span> <span class=s2>&#34;container_name&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;azure storage account container name&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;demo&#34;</span>
+}
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=azurerm_storage_account_sas>azurerm_storage_account_sas</h4>
+<p>When sharing the remote state we want some degree of access management and not have something publicly accessible. Once we have created the storage account we can obtain a Shared Access Signature (SAS Token) which allows fine-grained, ephemeral access control to various aspects of the storage account. This is defined as a data source type and not a resource type as we have been using previously. There are a lot of setting here so I will link to the <a href=https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_account_sas>official docs</a> which you can read at your own leisure.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>data</span> <span class=s2>&#34;azurerm_storage_account_sas&#34; &#34;state&#34;</span> {
+<span class=n>  connection_string</span> <span class=o>=</span> <span class=k>azurerm_storage_account</span><span class=p>.</span><span class=k>stacc</span><span class=p>.</span><span class=k>primary_connection_string</span>
+<span class=n>  https_only</span>        <span class=o>=</span> <span class=kt>true</span>
+  <span class=k>resource_types</span> {
+<span class=n>    service</span>   <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    container</span> <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    object</span>    <span class=o>=</span> <span class=kt>true</span>
+  }
+  <span class=k>services</span> {
+<span class=n>    blob</span>  <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    queue</span> <span class=o>=</span> <span class=kt>false</span>
+<span class=n>    table</span> <span class=o>=</span> <span class=kt>false</span>
+<span class=n>    file</span>  <span class=o>=</span> <span class=kt>false</span>
+  }
+<span class=n>  start</span> <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>sas_start</span><span class=c1>     # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span><span class=n>  expiry</span> <span class=o>=</span> <span class=k>timeadd</span><span class=p>(</span><span class=k>var</span><span class=p>.</span><span class=k>sas_start</span><span class=p>,</span> <span class=k>var</span><span class=p>.</span><span class=k>sas_timeadd</span><span class=p>)</span><span class=c1> # We need to declare this as a variable in the modules variables.tf
+</span><span class=c1></span>
+  <span class=k>permissions</span> {
+<span class=n>    read</span>    <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    write</span>   <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    delete</span>  <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    list</span>    <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    add</span>     <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    create</span>  <span class=o>=</span> <span class=kt>true</span>
+<span class=n>    update</span>  <span class=o>=</span> <span class=kt>false</span>
+<span class=n>    process</span> <span class=o>=</span> <span class=kt>false</span>
+  }
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>All of the settings could be created as variables but for our use case it&rsquo;s not required. Lets add the two we do need which will define the length of time the sas token is valid (before it expired). We can control these from the root module when calling this module.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>variable</span> <span class=s2>&#34;sas_start&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;Start time for SAS token expiration&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;timestamp()&#34;</span>
+}
+
+<span class=k>variable</span> <span class=s2>&#34;sas_timeadd&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;time to add to sas token start time which calculates the expiration duration&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;24h&#34;</span>
+}
+</code></pre></td></tr></table>
+</div>
+</div><h4 id=null_resource--local-exec-provisioner>null_resource / local-exec provisioner</h4>
+<p>When we change from local to remote state we will add a backend configuration to our root module and perform a terraform init feeding in the variables required for the new backend. What we will do now is create an output file containing this information in the required format. We can feed this in as the -backend-config parameter when we run the terraform init</p>
+<p>The required variables are;</p>
+<ul>
+<li>storage_account_name</li>
+<li>container_name</li>
+<li>key (we will use the Terraform default terraform.tfstate)</li>
+<li>sas_token</li>
+</ul>
+<p>It goes without saying this information needs to be securely stored and securely shared.</p>
+<p>To generate this output we are going to utilise the Terraform null_resource and local-exec provisioner.</p>
+<p>
+<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
+<img style=max-width:100%;width:auto;height:auto src=/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/info_hu90bf0207219454fdfafbb9c93dc105ef_65820_100x0_resize_q75_box.jpg width=100 height=100>
+</figure>
+<strong><em>The null_resource allows you to run a provisioner that is not directly associated with a specific resource. null_resources are treated as normal resources but they don&rsquo;t do anything)</em></strong></p>
+<p>The local-exec provisioner invokes a local executable after a resource is created.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>resource</span> <span class=s2>&#34;null_resource&#34; &#34;post-deploy&#34;</span> {
+<span class=n>  depends_on</span> <span class=o>=</span> <span class=p>[</span><span class=k>azurerm_storage_container</span><span class=p>.</span><span class=k>ct</span><span class=p>]</span><span class=c1>     # We need to ensure the container exists before providing the output
+</span><span class=c1></span>  <span class=k>provisioner</span> <span class=s2>&#34;local-exec&#34;</span> {
+<span class=n>  command</span> <span class=o>=</span> <span class=err>&lt;&lt;</span><span class=k>EOT</span>
+<span class=n>  echo &#39;storage_account_name</span> <span class=o>=</span> <span class=s2>&#34;${azurerm_storage_account.stacc.name}&#34;</span><span class=err>&#39;</span> <span class=err>&gt;&gt;</span> <span class=si>${</span><span class=err>var</span><span class=p>.</span><span class=err>sas_output_file</span><span class=si>}</span><span class=c1> # variable we need to define
+</span><span class=c1></span><span class=n>  echo &#39;container_name</span> <span class=o>=</span> <span class=s2>&#34;tf-state&#34;</span><span class=err>&#39;</span> <span class=err>&gt;&gt;</span> <span class=si>${</span><span class=err>var</span><span class=p>.</span><span class=err>sas_output_file</span><span class=si>}</span>
+<span class=n>  echo &#39;key</span> <span class=o>=</span> <span class=s2>&#34;terraform.tfstate&#34;</span><span class=err>&#39;</span> <span class=err>&gt;&gt;</span> <span class=si>${</span><span class=err>var</span><span class=p>.</span><span class=err>sas_output_file</span><span class=si>}</span>
+<span class=n>  echo &#39;sas_token</span> <span class=o>=</span> <span class=s2>&#34;${data.azurerm_storage_account_sas.state.sas}&#34;</span><span class=err>&#39;</span> <span class=err>&gt;&gt;</span> <span class=si>${</span><span class=err>var</span><span class=p>.</span><span class=err>sas_output_file</span><span class=si>}</span>
+  <span class=k>EOT</span>
+}
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>Just the one variable for this one which is the output file</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>variable</span> <span class=s2>&#34;sas_output_file&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;output file containing sas details for remote state&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;example.txt&#34;</span>
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>That finishes off the module configuration. The only output we need is being handled by our null_resource so we don&rsquo;t really need the output.tf but I may use it so will leave it there for now.</p>
+<p>Next we look at calling the module and providing all those values we defined as variables.</p>
+<p>Back to the root module main.tf</p>
+<h2 id=root---module>root - module</h2>
+<p>so far our root module is looking a bit light. We have only added the Azure provider. Lets now add a module block so we can utilise the remote state module we just created.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>module</span> <span class=s2>&#34;azure_remote_state&#34;</span> {
+<span class=n>  source</span>            <span class=o>=</span> <span class=s2>&#34;./modules/remote_state&#34;</span><span class=c1>               # Where it the module located
+</span><span class=c1></span><span class=n>  random_min</span>        <span class=o>=</span> <span class=m>100000</span><span class=c1>                                 # Minimum value for our random integer
+</span><span class=c1></span><span class=n>  random_max</span>        <span class=o>=</span> <span class=m>999999</span><span class=c1>                                 # Maximum value for our random integer
+</span><span class=c1></span><span class=n>  rg_name</span>           <span class=o>=</span> <span class=s2>&#34;demo-rg&#34;</span><span class=c1>                              # Name for the Azure Resource Group
+</span><span class=c1></span><span class=n>  rg_location</span>       <span class=o>=</span> <span class=s2>&#34;UK West&#34;</span><span class=c1>                              # Geographic location for our Azure Resource Group
+</span><span class=c1></span><span class=n>  stacc_name_prefix</span> <span class=o>=</span> <span class=s2>&#34;demonstration&#34;</span><span class=c1>                        # Prefix for our storage account - Random integer will be appended
+</span><span class=c1></span><span class=n>  acc_tier</span>          <span class=o>=</span> <span class=s2>&#34;standard&#34;</span><span class=c1>                             # Azure Storage Account Tier
+</span><span class=c1></span><span class=n>  acc_rep_type</span>      <span class=o>=</span> <span class=s2>&#34;LRS&#34;</span><span class=c1>                                  # Azure Storage Redundancy
+</span><span class=c1></span><span class=n>  container_name</span>    <span class=o>=</span> <span class=s2>&#34;tf-state&#34;</span><span class=c1>                             # Azure Storage Account Container Name
+</span><span class=c1></span><span class=n>  sas_start</span>         <span class=o>=</span> <span class=k>timestamp</span><span class=p>()</span><span class=c1>   #&#34;2021-03-30T07:00:00Z&#34;  # Starting time for the SAS Token including req. format
+</span><span class=c1></span><span class=n>  sas_timeadd</span>       <span class=o>=</span> <span class=s2>&#34;48h&#34;</span><span class=c1>                                  # Duration from starting time when SAS Token will expire
+</span><span class=c1></span><span class=n>  sas_output_file</span>   <span class=o>=</span> <span class=s2>&#34;sas-remote-state.txt&#34;</span><span class=c1>                 # Output file containing all the information we need to move to remove state
+</span><span class=c1></span>}
+</code></pre></td></tr></table>
+</div>
+</div><p>That should be enough for us to provision our remote state infrastructure. All goes well we will have an input file we can use when we change the state to remote. Lets see if it works!</p>
+<h3 id=terraform-init>Terraform init</h3>
+<p>We will first initialise our Terraform configuration so Terraform can prepare our working directory for its use.</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-2_hu4bcc9b17e20b2176cab300e1bdfc43d4_85002_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-2_hu4bcc9b17e20b2176cab300e1bdfc43d4_85002_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-2_hu4bcc9b17e20b2176cab300e1bdfc43d4_85002_800x0_resize_box_3.png>
+</figure>
+<p>No issues with the &lsquo;terraform init&rsquo; so lets try &lsquo;terraform plan&rsquo; next including a plan file.</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-10_hub31780a809874f2f6351ffae42286704_31321_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-10_hub31780a809874f2f6351ffae42286704_31321_800x0_resize_box_3.png 800w,
+https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-10_hub31780a809874f2f6351ffae42286704_31321_1200x0_resize_box_3.png 1200w," src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-10_hub31780a809874f2f6351ffae42286704_31321_800x0_resize_box_3.png>
+</figure>
+<p>This is just to show you what happens if you forget to login to azure first, its pretty descriptive :)</p>
+<p>Now that I have logged into Azure&mldr;..</p>
+<p>The plan..</p>
+<p><img src=terraform_plan_azure_remote_state.gif alt></p>
+<p>Plan is looking good.</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-13_hu9e7e4d445fa45dce9eebe7de3652ff4a_22899_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-13.png>
+</figure>
+<p>Lets proceed with the &lsquo;terraform apply&rsquo; using the plan file and then take a look at our Azure Resource groups</p>
+<p><img src=terraform_apply_azure_remote_state.gif alt></p>
+<p>Terraform output for the apply phase</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-12_hu131940e41db615df02b16da8bcd97a0b_17850_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-12.png>
+</figure>
+<p>terraform apply demo.tfplan</p>
+<p>Lets see if the backend configuration file with the SAS Token details was generated;</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-11_hu4d4db55c9d808faaf2d65b7eb942f255_39996_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-11_hu4d4db55c9d808faaf2d65b7eb942f255_39996_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-11_hu4d4db55c9d808faaf2d65b7eb942f255_39996_800x0_resize_box_3.png>
+</figure>
+<p>sas-remote-state.txt generated using null_resource and local-exec</p>
+<p>Everything is looking good. Our Azure infrastructure is deployed ready to hold our terraform state. We can now enable remote state!</p>
+<h2 id=enable-remote-state>Enable remote state</h2>
+<p>There are two parts to this process, first we need to update the root module to use a terraform configuration block (same as we did for the version dependency in our module) and then run terraform init with some backend parameters. Lets first update the root module main.tf</p>
+<p>All we need to define in the root module is the following;</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=k>terraform</span> {
+    <span class=k>backend</span> <span class=s2>&#34;azurerm&#34;</span> {
+    }
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>This is instructing terraform to use the azurerm provider to connect to the backend, All it needs now are the backend configuration information which we provide from our sas-remote-state.txt file when we initialise the remote state.</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-14_hu15852aa5b29811fef7836062dce4f7eb_38234_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-14_hu15852aa5b29811fef7836062dce4f7eb_38234_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-14_hu15852aa5b29811fef7836062dce4f7eb_38234_800x0_resize_box_3.png>
+</figure>
+<p>terraform init using the previously generates backend configuration file</p>
+<p>You can see that terraform has located the remote backend and seen there is no state there presently. We will answer yes to copy the local state to the remote backend.</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-15_huf7bdc31323d02543293650c09016e26d_111774_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-15_huf7bdc31323d02543293650c09016e26d_111774_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-15_huf7bdc31323d02543293650c09016e26d_111774_800x0_resize_box_3.png>
+</figure>
+<p>terraform init using the previously generates backend configuration file</p>
+<p>it we check the Azure storage account container we should see our state file;</p>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-16_hubc9284601bf8efc94dc25c17614d711b_44099_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-16_hubc9284601bf8efc94dc25c17614d711b_44099_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-multi-cloud-demo-part-2-terraform-remote-state-on-azure/image-16_hubc9284601bf8efc94dc25c17614d711b_44099_800x0_resize_box_3.png>
+</figure>
+<p>Azure portal showing the terraform.tfstate (remote state)</p>
+<p><img src=terraform_init_azure_remote_state-1.gif alt></p>
+<h2 id=source-control>Source control</h2>
+<p>Throughout the process we should be committing our changes to our VCS and making any changes to the README.md or .gitignore file.</p>
+<p>Following on from this exercise I have added an exclusion to my .gitignore file to ensure the storage account configuration is not in the public space.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=c1># Text file which may contain storage account credentials</span>
+*.txt
+</code></pre></td></tr></table>
+</div>
+</div><p>It is a good idea to then clear the git cache when making changes to tracked or untracked files in the .gitignore file. The following command sequence was used to clear the cache and update all our changes.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>git rm -r --cached .   
+git add .              
+git commit -m <span class=s2>&#34;commit message&#34;</span>
+git push
+</code></pre></td></tr></table>
+</div>
+</div><h2 id=summary>Summary</h2>
+<p>That ends this part of the demonstration. We have successfully defined our Azure configuration for hosting our Terraform state file and copied our state over by initialising the terraform configuration. If you want to move back to a local state for testing you can change the &lsquo;azurerm&rsquo; part of the backend configuration to &lsquo;local&rsquo;. Once you run terraform init again (without the backend configuration file) you will be asked to copy the file locally.</p>
+<p>In <a href=/post/terraform-multi-cloud-demo-part-3-aws-infrastructure/>part 3</a> we will start deploying the AWS infrastructure components.</p>
+<p><strong>Disclaimer: You may incur costs if you follow along with the exercise. Use at your own risk!</strong></p>
+</div>
+<footer class=post-footer>
+<div class=post-tags>
+<a href=https://davehart.co.uk/tags/azure/>Azure</a>
+<a href=https://davehart.co.uk/tags/azure/>azure</a>
+<a href=https://davehart.co.uk/tags/blog/>Blog</a>
+<a href=https://davehart.co.uk/tags/demo/>demo</a>
+<a href=https://davehart.co.uk/tags/github/>GitHub</a>
+<a href=https://davehart.co.uk/tags/remote-state/>Remote State</a>
+<a href=https://davehart.co.uk/tags/remote-state/>remote-state</a>
+<a href=https://davehart.co.uk/tags/terraform/>Terraform</a>
+<a href=https://davehart.co.uk/tags/terraform/>Terraform</a>
+<a href=https://davehart.co.uk/tags/training/>training</a>
+</div>
+<nav class=post-nav>
+<a class=next href=/post/terraform-multi-cloud-demo-part-1-foundations/>
+<span class="next-text nav-default">Terraform: Multi-cloud demo - Part 1 - Foundations</span>
+<span class="prev-text nav-mobile">Next</span>
+<i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18"><path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697c-11.777231-11.500939-30.216186-10.304694-41.178865 2.712784z"/></svg>
+</i>
+</a>
+</nav>
+</footer>
+</article>
+</div>
+</div>
+</main>
+<footer id=footer class=footer>
+<div class=icon-links>
+<a href=https://twitter.com/daveihart rel="me noopener" class=iconfont title=twitter target=_blank><svg class="icon" viewBox="0 0 1264 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M1229.8616 18.043658s-117.852626 63.135335-164.151872 67.344358C960.484169-78.763856 560.627046-7.210476 627.971403 308.466201 278.622548 312.675223 89.216542 47.506814 89.216542 47.506814S-28.636084 236.91282 164.978944 392.646647C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042 50.5082679999998-16.83609 134.688715-143.10676 134.688715-143.10676s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"/></svg>
+</a>
+<a href=https://www.linkedin.com/in/dave-hart/ rel="me noopener" class=iconfont title=linkedin target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="33" height="33"><path d="M872.405333 872.618667H720.768V635.008c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333.0-91.136 61.653333-91.136 125.397334v241.792H398.976V384H544.64v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667.0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667.0 01-88.021333-88.106666A88.064 88.064.0 11227.712 317.141333zm76.032 555.477334H151.68V384h152.064v488.618667zM948.266667.0h-872.704C33.792.0.0 33.024.0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667.0 948.138667.0h.128z"/></svg>
+</a>
+<a href=https://github.com/daveihart rel="me noopener" class=iconfont title=github target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36"><path d="M512 12.672c-282.88.0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667.0-12.16-.426667-44.373333-.64-87.04C242.005334 929.664 211.968 830.08 211.968 830.08 188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333.0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333.0.0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667.0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72.0 68.522667-.64 123.562667-.64 140.202666.0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"/></svg>
+</a>
+<a href=https://davehart.co.uk/index.xml rel="noopener alternate" type=application/rss+xml class=iconfont title=rss target=_blank><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30"><path d="M819.157333 1024C819.157333 574.592 449.408 204.8.0 204.8V0c561.706667.0 1024 462.293333 1024 1024H819.157333zM140.416 743.04a140.8 140.8.0 01140.501333 140.586667A140.928 140.928.0 01140.074667 1024C62.72 1024 0 961.109333.0 883.626667S62.933333 743.082667 140.416 743.04zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667v-199.04c372.352.0 678.784 306.517333 678.784 678.826667z"/></svg>
+</a>
+</div>
+<div class=copyright>
+<span class=power-by>
+Powered by <a class=hexo-link href=https://gohugo.io>Hugo</a>
+</span>
+<span class=division>|</span>
+<span class=theme-info>
+Theme - <a class=theme-link href=https://github.com/xianmin/hugo-theme-jane>Jane</a>
+</span>
+<span class=copyright-year>
+&copy;
+2020 -
+2021
+<span class=heart>
+<i class=iconfont><svg class="icon" viewBox="0 0 1025 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="14" height="14"><path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7.0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1.0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2.0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3.1-42.5-8-83.6-24-122.2z" fill="#8a8a8a"/></svg>
+</i>
+</span><span class=author>
+Dave
+</span></span>
+</div>
+</footer>
+<div class=back-to-top id=back-to-top>
+<i class=iconfont><svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="35" height="35"><path d="M510.866688 227.694839 95.449397 629.218702h235.761562L329.15309 958.01517h362.40389L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777h894.052392v131.813095H63.840492V63.962777zm0 0"/></svg>
+</i>
+</div>
+</div>
+<script type=text/javascript src=/lib/jquery/jquery-3.2.1.min.js></script>
+<script type=text/javascript src=/lib/slideout/slideout-1.0.1.min.js></script>
+<script type=text/javascript src=/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin=anonymous></script>
+<script type=text/javascript src=/js/load-photoswipe.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe.min.js></script>
+<script type=text/javascript src=/lib/photoswipe/photoswipe-ui-default.min.js></script>
+</body>
+</html>
