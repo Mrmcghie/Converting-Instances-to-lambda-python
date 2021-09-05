@@ -29,7 +29,7 @@
 <meta itemprop=name content="First!  Terraform, AWS and WordPress - Part I">
 <meta itemprop=description content="Well here we go then, where to start? It seemed only fitting that the first post covers the fun I had setting up this WordPress server and site. I looked around at some of the options available, payed hosting etc and decided that &ldquo;hey, lets learn something and share the experience at the same time&rdquo;. Rather than manually setting up and configure the server (easy), I decided to try automate it as much as possible."><meta itemprop=datePublished content="2020-09-19T02:59:40+00:00">
 <meta itemprop=dateModified content="2020-09-19T02:59:40+00:00">
-<meta itemprop=wordCount content="2555">
+<meta itemprop=wordCount content="2545">
 <meta itemprop=keywords content="apache,Apache,AWS,AWS,bash,Blog,HCL,MYSQL,shell,Terraform,Terraform,WordPress,WordPress,"><meta name=twitter:card content="summary">
 <meta name=twitter:title content="First!  Terraform, AWS and WordPress - Part I">
 <meta name=twitter:description content="Well here we go then, where to start? It seemed only fitting that the first post covers the fun I had setting up this WordPress server and site. I looked around at some of the options available, payed hosting etc and decided that &ldquo;hey, lets learn something and share the experience at the same time&rdquo;. Rather than manually setting up and configure the server (easy), I decided to try automate it as much as possible."><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script>
@@ -131,7 +131,7 @@ Dave's blog
 <time datetime=2020-09-19 class=post-time>
 2020-09-19
 </time>
-<span class=more-meta> 2555 words </span>
+<span class=more-meta> 2545 words </span>
 <span class=more-meta> 12 min read </span>
 </div>
 </header>
@@ -163,8 +163,8 @@ Dave's blog
 <ul>
 <li>Use the + drop-down menu and select New repository</li>
 </ul>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image4_hu5d8f631aa06eeba3749c1eeee6f67d86_4505_800x600_fit_box_3.png width=226 height=74>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset src=https://davehart.co.uk/post/terraform-aws-wordpress/image4.png>
 </figure>
 <ul>
 <li>Give the new repository a memorable name</li>
@@ -174,12 +174,12 @@ Dave's blog
 <li>For the sake of this example I also added a .gitignore with a Terraform template. I do not plan on initialising this locally but its just good practice.</li>
 <li>Click the big green button</li>
 </ul>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-211_hu3a0cda27f345812a38bd39a70b098fda_65452_800x600_fit_box_3.png width=543 height=600>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-211_hu3a0cda27f345812a38bd39a70b098fda_65452_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-211.png>
 </figure>
 <p>Once the repository is created, copy the https link from the code dialog;</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-34_huc2c8baea126ce48baf7bc2a6ec6f5e6f_37677_800x600_fit_box_3.png width=736 height=341>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-34_huc2c8baea126ce48baf7bc2a6ec6f5e6f_37677_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-34.png>
 </figure>
 <h2 id=microsoft-visual-studio-code>Microsoft Visual Studio Code</h2>
 <p>For development work I use Windows 10 with Microsoft Visual Studio Code. Depending on the use case I will either develop locally or will use a WSL deployment of Ubuntu. For this project I will just stick to local. Next task is to clone the repository we just created on GitHub using git.</p>
@@ -192,18 +192,19 @@ Dave's blog
 </span><span class=lnt>2
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>git init
+<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>git init
 git clone https://github.com/daveihart/tf-davehart.co.uk-wordpress_.git
 </code></pre></td></tr></table>
 </div>
 </div>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-52_huf76db7506b3b962b9415031d178ef3d8_62931_800x600_fit_box_3.png width=800 height=391>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-52_huf76db7506b3b962b9415031d178ef3d8_62931_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-aws-wordpress/image-52_huf76db7506b3b962b9415031d178ef3d8_62931_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-52_huf76db7506b3b962b9415031d178ef3d8_62931_800x0_resize_box_3.png>
 </figure>
 <h2 id=terraform>Terraform</h2>
 <p>Now there are many ways to setup your Terraform project. I like to separate out the key sections into their own files. For this project I started with three files. You can deploy your HCL all in one file but I like to think of the possibility to expand on a project and it would be easier if you do all the groundwork from the start. This method will also make it easier to trawl through the code in smaller files should you encounter any issues.</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-61_hu159d0fa9b172096bc2dc69527612f6c6_3275_600x400_fit_box_3.png width=262 height=85>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset src=https://davehart.co.uk/post/terraform-aws-wordpress/image-61.png>
 </figure>
 <p>The variables file will hold any variables required for the deployment. Hopefully the optional descriptions added will be enough</p>
 <div class=highlight><div class=chroma>
@@ -243,38 +244,38 @@ git clone https://github.com/daveihart/tf-davehart.co.uk-wordpress_.git
 </span><span class=lnt>33
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback># VARIABLES
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=c1># VARIABLES
+</span><span class=c1></span>
+<span class=k>variable</span> <span class=s2>&#34;region&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;AWS region to use when provisioning&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;eu-west-2&#34;</span>
+}
+<span class=k>variable</span> <span class=s2>&#34;key_name&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;ec2 instance keypair to use when provisioning&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;supersecretkeypair&#34;</span>
+}
+<span class=k>variable</span> <span class=s2>&#34;env_prefix&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;prefix used for tags and the like&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;dev&#34;</span>
+}
+<span class=k>variable</span> <span class=s2>&#34;instance_size&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;instance type mapping based on role&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>map</span><span class=p>(</span><span class=k>string</span><span class=p>)</span>
+<span class=n>  default</span>     <span class=o>=</span><span class=n> { wordpress</span> <span class=o>=</span> <span class=s2>&#34;t2.micro&#34;</span> }
 
-variable &#34;region&#34; {
-  description = &#34;AWS region to use when provisioning&#34;
-  type        = string
-  default     = &#34;eu-west-2&#34;
 }
-variable &#34;key_name&#34; {
-  description = &#34;ec2 instance keypair to use when provisioning&#34;
-  type        = string
-  default     = &#34;supersecretkeypair&#34;
+<span class=k>variable</span> <span class=s2>&#34;dns_zone_id&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;zone id for route 53&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>string</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=s2>&#34;supersecretdnszone&#34;</span>
 }
-variable &#34;env_prefix&#34; {
-  description = &#34;prefix used for tags and the like&#34;
-  type        = string
-  default     = &#34;dev&#34;
-}
-variable &#34;instance_size&#34; {
-  description = &#34;instance type mapping based on role&#34;
-  type        = map(string)
-  default     = { wordpress = &#34;t2.micro&#34; }
-
-}
-variable &#34;dns_zone_id&#34; {
-  description = &#34;zone id for route 53&#34;
-  type        = string
-  default     = &#34;supersecretdnszone&#34;
-}
-variable &#34;wordpress_count&#34; {
-  description = &#34;number of wordpress servers to deploy&#34;
-  type        = number
-  default     = 1
+<span class=k>variable</span> <span class=s2>&#34;wordpress_count&#34;</span> {
+<span class=n>  description</span> <span class=o>=</span> <span class=s2>&#34;number of wordpress servers to deploy&#34;</span>
+<span class=n>  type</span>        <span class=o>=</span> <span class=k>number</span>
+<span class=n>  default</span>     <span class=o>=</span> <span class=m>1</span>
 } 
 </code></pre></td></tr></table>
 </div>
@@ -287,9 +288,9 @@ variable &#34;wordpress_count&#34; {
 </span><span class=lnt>4
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback># PROVIDERS
-provider &#34;aws&#34; {
-  region = var.region
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=c1># PROVIDERS
+</span><span class=c1></span><span class=k>provider</span> <span class=s2>&#34;aws&#34;</span> {
+<span class=n>  region</span> <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>region</span>
 }
 </code></pre></td></tr></table>
 </div>
@@ -310,13 +311,13 @@ provider &#34;aws&#34; {
 </span><span class=lnt>10
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback># BACKEND
-
-terraform {
-  backend &#34;remote&#34; {
-    organization = &#34;my_organisation&#34;
-    workspaces {
-      name = &#34;tf_davehart_wordpress&#34;
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=c1># BACKEND
+</span><span class=c1></span>
+<span class=k>terraform</span> {
+  <span class=k>backend</span> <span class=s2>&#34;remote&#34;</span> {
+<span class=n>    organization</span> <span class=o>=</span> <span class=s2>&#34;my_organisation&#34;</span>
+    <span class=k>workspaces</span> {
+<span class=n>      name</span> <span class=o>=</span> <span class=s2>&#34;tf_davehart_wordpress&#34;</span>
     }
   }
 }
@@ -354,31 +355,31 @@ terraform {
 </span><span class=lnt>27
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback># DATA Sources
-data &#34;aws_vpc&#34; &#34;vpc&#34; {
-  tags = {
-    Name = &#34;${var.env_prefix}-vpc&#34;
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=c1># DATA Sources
+</span><span class=c1></span><span class=k>data</span> <span class=s2>&#34;aws_vpc&#34; &#34;vpc&#34;</span> {
+<span class=n>  tags</span> <span class=o>=</span> {
+<span class=n>    Name</span> <span class=o>=</span> <span class=s2>&#34;${var.env_prefix}-vpc&#34;</span>
   }
 }
-data &#34;aws_subnet&#34; &#34;public&#34; {
-  tags = {
-    Name = &#34;${var.env_prefix}-public&#34;
+<span class=k>data</span> <span class=s2>&#34;aws_subnet&#34; &#34;public&#34;</span> {
+<span class=n>  tags</span> <span class=o>=</span> {
+<span class=n>    Name</span> <span class=o>=</span> <span class=s2>&#34;${var.env_prefix}-public&#34;</span>
   }
 }
-data &#34;aws_ami&#34; &#34;aws-linux&#34; {
-  most_recent = true
-  owners      = [&#34;amazon&#34;]
-  filter {
-    name   = &#34;name&#34;
-    values = [&#34;amzn-ami-hvm*&#34;]
+<span class=k>data</span> <span class=s2>&#34;aws_ami&#34; &#34;aws-linux&#34;</span> {
+<span class=n>  most_recent</span> <span class=o>=</span> <span class=kt>true</span>
+<span class=n>  owners</span>      <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;amazon&#34;</span><span class=p>]</span>
+  <span class=k>filter</span> {
+<span class=n>    name</span>   <span class=o>=</span> <span class=s2>&#34;name&#34;</span>
+<span class=n>    values</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;amzn-ami-hvm*&#34;</span><span class=p>]</span>
   }
-  filter {
-    name   = &#34;root-device-type&#34;
-    values = [&#34;ebs&#34;]
+  <span class=k>filter</span> {
+<span class=n>    name</span>   <span class=o>=</span> <span class=s2>&#34;root-device-type&#34;</span>
+<span class=n>    values</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;ebs&#34;</span><span class=p>]</span>
   }
-  filter {
-    name   = &#34;virtualization-type&#34;
-    values = [&#34;hvm&#34;]
+  <span class=k>filter</span> {
+<span class=n>    name</span>   <span class=o>=</span> <span class=s2>&#34;virtualization-type&#34;</span>
+<span class=n>    values</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;hvm&#34;</span><span class=p>]</span>
   }
 }
 </code></pre></td></tr></table>
@@ -499,59 +500,59 @@ data &#34;aws_ami&#34; &#34;aws-linux&#34; {
 </span><span class=lnt>55
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback># RESOURCES
-
-# SECURITY GROUPS #
-# WordPress security group 
-resource &#34;aws_security_group&#34; &#34;wordpress-sg&#34; {
-  name   = &#34;${var.env_prefix}_wordpress_sg&#34;
-  vpc_id = data.aws_vpc.vpc.id
-  # SSH access from anywhere
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = &#34;tcp&#34;
-    cidr_blocks = [&#34;0.0.0.0/0&#34;]
-  }
-
-  # HTTPS access
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = &#34;tcp&#34;
-    cidr_blocks = [&#34;0.0.0.0/0&#34;]
-  }
-
-  # FTP access
-  ingress {
-    from_port   = 20
-    to_port     = 21
-    protocol    = &#34;tcp&#34;
-    cidr_blocks = [&#34;0.0.0.0/0&#34;]
-  }
-
-  # FTP access
-  ingress {
-    from_port   = 1024
-    to_port     = 1048
-    protocol    = &#34;tcp&#34;
-    cidr_blocks = [&#34;0.0.0.0/0&#34;]
-  }
-
-# HTTP access - needed for Certbot
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = &#34;tcp&#34;
-    cidr_blocks = [&#34;0.0.0.0/0&#34;]
-  }
-
-  # outbound internet access
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = &#34;-1&#34;
-    cidr_blocks = [&#34;0.0.0.0/0&#34;]
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=c1># RESOURCES
+</span><span class=c1>
+</span><span class=c1># SECURITY GROUPS #
+</span><span class=c1># WordPress security group 
+</span><span class=c1></span><span class=k>resource</span> <span class=s2>&#34;aws_security_group&#34; &#34;wordpress-sg&#34;</span> {
+<span class=n>  name</span>   <span class=o>=</span> <span class=s2>&#34;${var.env_prefix}_wordpress_sg&#34;</span>
+<span class=n>  vpc_id</span> <span class=o>=</span> <span class=k>data</span><span class=p>.</span><span class=k>aws_vpc</span><span class=p>.</span><span class=k>vpc</span><span class=p>.</span><span class=k>id</span><span class=c1>
+</span><span class=c1>  # SSH access from anywhere
+</span><span class=c1></span>  <span class=k>ingress</span> {
+<span class=n>    from_port</span>   <span class=o>=</span> <span class=m>22</span>
+<span class=n>    to_port</span>     <span class=o>=</span> <span class=m>22</span>
+<span class=n>    protocol</span>    <span class=o>=</span> <span class=s2>&#34;tcp&#34;</span>
+<span class=n>    cidr_blocks</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;0.0.0.0/0&#34;</span><span class=p>]</span>
+  }<span class=c1>
+</span><span class=c1>
+</span><span class=c1>  # HTTPS access
+</span><span class=c1></span>  <span class=k>ingress</span> {
+<span class=n>    from_port</span>   <span class=o>=</span> <span class=m>443</span>
+<span class=n>    to_port</span>     <span class=o>=</span> <span class=m>443</span>
+<span class=n>    protocol</span>    <span class=o>=</span> <span class=s2>&#34;tcp&#34;</span>
+<span class=n>    cidr_blocks</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;0.0.0.0/0&#34;</span><span class=p>]</span>
+  }<span class=c1>
+</span><span class=c1>
+</span><span class=c1>  # FTP access
+</span><span class=c1></span>  <span class=k>ingress</span> {
+<span class=n>    from_port</span>   <span class=o>=</span> <span class=m>20</span>
+<span class=n>    to_port</span>     <span class=o>=</span> <span class=m>21</span>
+<span class=n>    protocol</span>    <span class=o>=</span> <span class=s2>&#34;tcp&#34;</span>
+<span class=n>    cidr_blocks</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;0.0.0.0/0&#34;</span><span class=p>]</span>
+  }<span class=c1>
+</span><span class=c1>
+</span><span class=c1>  # FTP access
+</span><span class=c1></span>  <span class=k>ingress</span> {
+<span class=n>    from_port</span>   <span class=o>=</span> <span class=m>1024</span>
+<span class=n>    to_port</span>     <span class=o>=</span> <span class=m>1048</span>
+<span class=n>    protocol</span>    <span class=o>=</span> <span class=s2>&#34;tcp&#34;</span>
+<span class=n>    cidr_blocks</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;0.0.0.0/0&#34;</span><span class=p>]</span>
+  }<span class=c1>
+</span><span class=c1>
+</span><span class=c1># HTTP access - needed for Certbot
+</span><span class=c1></span>  <span class=k>ingress</span> {
+<span class=n>    from_port</span>   <span class=o>=</span> <span class=m>80</span>
+<span class=n>    to_port</span>     <span class=o>=</span> <span class=m>80</span>
+<span class=n>    protocol</span>    <span class=o>=</span> <span class=s2>&#34;tcp&#34;</span>
+<span class=n>    cidr_blocks</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;0.0.0.0/0&#34;</span><span class=p>]</span>
+  }<span class=c1>
+</span><span class=c1>
+</span><span class=c1>  # outbound internet access
+</span><span class=c1></span>  <span class=k>egress</span> {
+<span class=n>    from_port</span>   <span class=o>=</span> <span class=m>0</span>
+<span class=n>    to_port</span>     <span class=o>=</span> <span class=m>0</span>
+<span class=n>    protocol</span>    <span class=o>=</span> <span class=s2>&#34;-1&#34;</span>
+<span class=n>    cidr_blocks</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;0.0.0.0/0&#34;</span><span class=p>]</span>
   }
 } 
 </code></pre></td></tr></table>
@@ -626,72 +627,72 @@ resource &#34;aws_security_group&#34; &#34;wordpress-sg&#34; {
 </span><span class=lnt>65
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback># RESOURCES
-...Continued
-# INSTANCES #
-resource &#34;aws_instance&#34; &#34;wordpress&#34; {
-  count                  = var.wordpress_count
-  ami                    = data.aws_ami.aws-linux.id
-  instance_type          = var.instance_size[&#34;wordpress&#34;]
-  subnet_id              = data.aws_subnet.public.id
-  vpc_security_group_ids = [aws_security_group.wordpress-sg.id]
-  key_name               = var.key_name
-  tags      = merge(local.common_tags, { Name = &#34;${var.env_prefix}-wordpress&#34; })
-  user_data = &lt;&lt;EOF
-          #!/bin/bash
-          sudo yum update -y
-          sudo yum install -y httpd24 php72 mysql57-server php72-mysqlnd
-          sudo service mysqld start
-          sudo service httpd start
-          sudo chkconfig httpd on
-          sudo chkconfig mysqld on
-          sudo usermod -a -G apache ec2-user
-          sudo chown -R ec2-user:apache /var/www
-          sudo yum install -y mod24_ssl
-          sudo yum-config-manager --enable epel
-          sudo wget https://dl.eff.org/certbot-auto
-          sudo chmod a+x certbot-auto
-          sudo echo &#34;&lt;VirtualHost *:80&gt;&#34; &gt;&gt; /etc/httpd/conf/httpd.conf
-          sudo echo &#34;ServerName davehart.co.uk&#34; &gt;&gt; /etc/httpd/conf/httpd.conf
-          sudo echo &#34;DocumentRoot /var/www/html&#34; &gt;&gt; /etc/httpd/conf/httpd.conf
-          sudo echo &#34;&lt;/VirtualHost&gt;&#34; &gt;&gt; /etc/httpd/conf/httpd.conf
-          sudo ./certbot-auto --authenticator apache --debug --agree-tos -m &#34;myemailaddress&#34; --installer apache -d &#34;davehart.co.uk&#34; --pre-hook &#34;httpd -k stop&#34; --post-hook &#34;httpd -k start&#34; -n
-          sudo wget https://wordpress.org/latest.tar.gz
-          sudo tar -xzf latest.tar.gz
-          mysql -u root -e &#34;delete from mysql.user where user=&#39;&#39;;drop database if exists test;delete from mysql.db where db=&#39;test&#39; or db=&#39;test\\_%&#39;;flush privileges;&#34;
-          mysql -u root -e &#34;create user &#39;a-user-for-wordpress&#39;@&#39;localhost&#39; identified by &#39;superstrongpassword&#39;;create database wordpressdb;grant all privileges on wordpressdb.* to &#39;a-user-for-wordpress&#39;@&#39;localhost&#39;;FLUSH PRIVILEGES;&#34;
-          cp /wordpress/wp-config-sample.php /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;DB_NAME&#39;, &#39;database_name_here&#39; );/define( &#39;DB_NAME&#39;, &#39;wordpressdb&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;DB_USER&#39;, &#39;username_here&#39; );/define( &#39;DB_USER&#39;, &#39;a-user-for-wordpress&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;DB_PASSWORD&#39;, &#39;password_here&#39; );/define( &#39;DB_PASSWORD&#39;, &#39;superstrongpassword&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;AUTH_KEY&#39;,         &#39;put your unique phrase here&#39; );/define( &#39;AUTH_KEY&#39;,         &#39;uniquesalt&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;SECURE_AUTH_KEY&#39;,  &#39;put your unique phrase here&#39; );/define( &#39;SECURE_AUTH_KEY&#39;,  &#39;uniquesalt&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;LOGGED_IN_KEY&#39;,    &#39;put your unique phrase here&#39; );/define( &#39;LOGGED_IN_KEY&#39;,    &#39;uniquesalt&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;NONCE_KEY&#39;,        &#39;put your unique phrase here&#39; );/define( &#39;NONCE_KEY&#39;,        &#39;uniquesalt&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;AUTH_SALT&#39;,        &#39;put your unique phrase here&#39; );/define( &#39;AUTH_SALT&#39;,        &#39;uniquesalt&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;SECURE_AUTH_SALT&#39;, &#39;put your unique phrase here&#39; );/define( &#39;SECURE_AUTH_SALT&#39;, &#39;uniquesalt&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;LOGGED_IN_SALT&#39;,   &#39;put your unique phrase here&#39; );/define( &#39;LOGGED_IN_SALT&#39;,   &#39;uniquesalt&#39; );/g&#34; /wordpress/wp-config.php
-          sed -i &#34;s/define( &#39;NONCE_SALT&#39;,       &#39;put your unique phrase here&#39; );/define( &#39;NONCE_SALT&#39;,       &#39;uniquesalt&#39; );/g&#34; /wordpress/wp-config.php 
-          cp -r wordpress/* /var/www/html/
-          sed -i &#39;/&lt;Directory &#34;\/var\/www\/html&#34;&gt;/,/&lt;\/Directory&gt;/ s/AllowOverride None/AllowOverride all/&#39; httpd.conf
-          sudo yum install php72-gd -y
-          sudo service httpd restart
-          sudo yum install vsftpd -y
-          sed -i &#34;s/anonymous_enable=Yes;/anonymous_enable=No;/g&#34; /etc/vsftpd/vsftpd.conf
-          sudo echo &#34;pasv_enable=YES&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
-          sudo echo &#34;pasv_min_port=1024&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
-          sudo echo &#34;pasv_max_port=1048&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
-          sudo echo &#34;pasv_addr_resolve=YES&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
-          sudo echo &#34;pasv_address=davehart.co.uk&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
-          sudo useradd wordpress-user
-          sudo echo -e &#34;7111065299081&#34; | passwd wordpress 
-          sudo usermod
-          sudo chmod 2775 /var/www
-          sudo find /var/www -type d -exec sudo chmod 2775 {} \;
-          sudo find /var/www -type f -exec sudo chmod 0664 {} \;
-    EOF
-} 
-</code></pre></td></tr></table>
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=c1># RESOURCES
+</span><span class=c1></span><span class=p>...</span><span class=k>Continued</span><span class=c1>
+</span><span class=c1># INSTANCES #
+</span><span class=c1></span><span class=k>resource</span> <span class=s2>&#34;aws_instance&#34; &#34;wordpress&#34;</span> {
+<span class=n>  count</span>                  <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>wordpress_count</span>
+<span class=n>  ami</span>                    <span class=o>=</span> <span class=k>data</span><span class=p>.</span><span class=k>aws_ami</span><span class=p>.</span><span class=k>aws</span><span class=err>-</span><span class=k>linux</span><span class=p>.</span><span class=k>id</span>
+<span class=n>  instance_type</span>          <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>instance_size</span><span class=p>[</span><span class=s2>&#34;wordpress&#34;</span><span class=p>]</span>
+<span class=n>  subnet_id</span>              <span class=o>=</span> <span class=k>data</span><span class=p>.</span><span class=k>aws_subnet</span><span class=p>.</span><span class=k>public</span><span class=p>.</span><span class=k>id</span>
+<span class=n>  vpc_security_group_ids</span> <span class=o>=</span> <span class=p>[</span><span class=k>aws_security_group</span><span class=p>.</span><span class=k>wordpress</span><span class=err>-</span><span class=k>sg</span><span class=p>.</span><span class=k>id</span><span class=p>]</span>
+<span class=n>  key_name</span>               <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>key_name</span>
+<span class=n>  tags</span>      <span class=o>=</span><span class=n> merge(local.common_tags, { Name</span> <span class=o>=</span> <span class=s2>&#34;${var.env_prefix}-wordpress&#34;</span> }<span class=p>)</span>
+<span class=n>  user_data</span> <span class=o>=</span> <span class=err>&lt;&lt;</span><span class=k>EOF</span><span class=c1>
+</span><span class=c1>          #!/bin/bash
+</span><span class=c1></span>          <span class=k>sudo</span> <span class=k>yum</span> <span class=k>update</span> <span class=err>-</span><span class=k>y</span>
+          <span class=k>sudo</span> <span class=k>yum</span> <span class=k>install</span> <span class=err>-</span><span class=k>y</span> <span class=k>httpd24</span> <span class=k>php72</span> <span class=k>mysql57</span><span class=err>-</span><span class=k>server</span> <span class=k>php72</span><span class=err>-</span><span class=k>mysqlnd</span>
+          <span class=k>sudo</span> <span class=k>service</span> <span class=k>mysqld</span> <span class=k>start</span>
+          <span class=k>sudo</span> <span class=k>service</span> <span class=k>httpd</span> <span class=k>start</span>
+          <span class=k>sudo</span> <span class=k>chkconfig</span> <span class=k>httpd</span> <span class=k>on</span>
+          <span class=k>sudo</span> <span class=k>chkconfig</span> <span class=k>mysqld</span> <span class=k>on</span>
+          <span class=k>sudo</span> <span class=k>usermod</span> <span class=err>-</span><span class=k>a</span> <span class=err>-</span><span class=k>G</span> <span class=k>apache</span> <span class=k>ec2</span><span class=err>-</span><span class=k>user</span>
+          <span class=k>sudo</span> <span class=k>chown</span> <span class=err>-</span><span class=k>R</span> <span class=k>ec2</span><span class=err>-</span><span class=k>user</span><span class=err>:</span><span class=k>apache</span> <span class=err>/</span><span class=k>var</span><span class=err>/</span><span class=k>www</span>
+          <span class=k>sudo</span> <span class=k>yum</span> <span class=k>install</span> <span class=err>-</span><span class=k>y</span> <span class=k>mod24_ssl</span>
+          <span class=k>sudo</span> <span class=k>yum</span><span class=err>-</span><span class=k>config</span><span class=err>-</span><span class=k>manager</span> <span class=err>--</span><span class=k>enable</span> <span class=k>epel</span>
+          <span class=k>sudo</span> <span class=k>wget</span> <span class=k>https</span><span class=err>://</span><span class=k>dl</span><span class=p>.</span><span class=k>eff</span><span class=p>.</span><span class=k>org</span><span class=err>/</span><span class=k>certbot</span><span class=err>-</span><span class=k>auto</span>
+          <span class=k>sudo</span> <span class=k>chmod</span> <span class=k>a</span><span class=err>+</span><span class=k>x</span> <span class=k>certbot</span><span class=err>-</span><span class=k>auto</span>
+          <span class=k>sudo</span> <span class=k>echo</span> <span class=s2>&#34;&lt;VirtualHost *:80&gt;&#34;</span> <span class=err>&gt;&gt;</span> <span class=err>/</span><span class=k>etc</span><span class=err>/</span><span class=k>httpd</span><span class=err>/</span><span class=k>conf</span><span class=err>/</span><span class=k>httpd</span><span class=p>.</span><span class=k>conf</span>
+          <span class=k>sudo</span> <span class=k>echo</span> <span class=s2>&#34;ServerName davehart.co.uk&#34;</span> <span class=err>&gt;&gt;</span> <span class=err>/</span><span class=k>etc</span><span class=err>/</span><span class=k>httpd</span><span class=err>/</span><span class=k>conf</span><span class=err>/</span><span class=k>httpd</span><span class=p>.</span><span class=k>conf</span>
+          <span class=k>sudo</span> <span class=k>echo</span> <span class=s2>&#34;DocumentRoot /var/www/html&#34;</span> <span class=err>&gt;&gt;</span> <span class=err>/</span><span class=k>etc</span><span class=err>/</span><span class=k>httpd</span><span class=err>/</span><span class=k>conf</span><span class=err>/</span><span class=k>httpd</span><span class=p>.</span><span class=k>conf</span>
+          <span class=k>sudo</span> <span class=k>echo</span> <span class=s2>&#34;&lt;/VirtualHost&gt;&#34;</span> <span class=err>&gt;&gt;</span> <span class=err>/</span><span class=k>etc</span><span class=err>/</span><span class=k>httpd</span><span class=err>/</span><span class=k>conf</span><span class=err>/</span><span class=k>httpd</span><span class=p>.</span><span class=k>conf</span>
+          <span class=k>sudo</span> <span class=p>.</span><span class=err>/</span><span class=k>certbot</span><span class=err>-</span><span class=k>auto</span> <span class=err>--</span><span class=k>authenticator</span> <span class=k>apache</span> <span class=err>--</span><span class=k>debug</span> <span class=err>--</span><span class=k>agree</span><span class=err>-</span><span class=k>tos</span> <span class=err>-</span><span class=k>m</span> <span class=s2>&#34;myemailaddress&#34; --installer apache -d &#34;davehart.co.uk&#34; --pre-hook &#34;httpd -k stop&#34; --post-hook &#34;httpd -k start&#34;</span> <span class=err>-</span><span class=k>n</span>
+          <span class=k>sudo</span> <span class=k>wget</span> <span class=k>https</span><span class=err>://</span><span class=k>wordpress</span><span class=p>.</span><span class=k>org</span><span class=err>/</span><span class=k>latest</span><span class=p>.</span><span class=k>tar</span><span class=p>.</span><span class=k>gz</span>
+          <span class=k>sudo</span> <span class=k>tar</span> <span class=err>-</span><span class=k>xzf</span> <span class=k>latest</span><span class=p>.</span><span class=k>tar</span><span class=p>.</span><span class=k>gz</span>
+<span class=n>          mysql -u root -e &#34;delete from mysql.user where user</span><span class=o>=</span><span class=n>&#39;&#39;;drop database if exists test;delete from mysql.db where db</span><span class=o>=</span><span class=n>&#39;test&#39; or db</span><span class=o>=</span><span class=err>&#39;</span><span class=k>test</span><span class=err>\\</span><span class=k>_</span><span class=err>%&#39;;</span><span class=k>flush</span> <span class=k>privileges</span><span class=err>;&#34;</span>
+          <span class=k>mysql</span> <span class=err>-</span><span class=k>u</span> <span class=k>root</span> <span class=err>-</span><span class=k>e</span> <span class=s2>&#34;create user &#39;a-user-for-wordpress&#39;@&#39;localhost&#39; identified by &#39;superstrongpassword&#39;;create database wordpressdb;grant all privileges on wordpressdb.* to &#39;a-user-for-wordpress&#39;@&#39;localhost&#39;;FLUSH PRIVILEGES;&#34;</span>
+          <span class=k>cp</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=err>-</span><span class=k>sample</span><span class=p>.</span><span class=k>php</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;DB_NAME&#39;, &#39;database_name_here&#39; );/define( &#39;DB_NAME&#39;, &#39;wordpressdb&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;DB_USER&#39;, &#39;username_here&#39; );/define( &#39;DB_USER&#39;, &#39;a-user-for-wordpress&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;DB_PASSWORD&#39;, &#39;password_here&#39; );/define( &#39;DB_PASSWORD&#39;, &#39;superstrongpassword&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;AUTH_KEY&#39;,         &#39;put your unique phrase here&#39; );/define( &#39;AUTH_KEY&#39;,         &#39;uniquesalt&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;SECURE_AUTH_KEY&#39;,  &#39;put your unique phrase here&#39; );/define( &#39;SECURE_AUTH_KEY&#39;,  &#39;uniquesalt&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;LOGGED_IN_KEY&#39;,    &#39;put your unique phrase here&#39; );/define( &#39;LOGGED_IN_KEY&#39;,    &#39;uniquesalt&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;NONCE_KEY&#39;,        &#39;put your unique phrase here&#39; );/define( &#39;NONCE_KEY&#39;,        &#39;uniquesalt&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;AUTH_SALT&#39;,        &#39;put your unique phrase here&#39; );/define( &#39;AUTH_SALT&#39;,        &#39;uniquesalt&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;SECURE_AUTH_SALT&#39;, &#39;put your unique phrase here&#39; );/define( &#39;SECURE_AUTH_SALT&#39;, &#39;uniquesalt&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;LOGGED_IN_SALT&#39;,   &#39;put your unique phrase here&#39; );/define( &#39;LOGGED_IN_SALT&#39;,   &#39;uniquesalt&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span>
+          <span class=k>sed</span> <span class=err>-</span><span class=k>i</span> <span class=s2>&#34;s/define( &#39;NONCE_SALT&#39;,       &#39;put your unique phrase here&#39; );/define( &#39;NONCE_SALT&#39;,       &#39;uniquesalt&#39; );/g&#34;</span> <span class=err>/</span><span class=k>wordpress</span><span class=err>/</span><span class=k>wp</span><span class=err>-</span><span class=k>config</span><span class=p>.</span><span class=k>php</span> 
+          <span class=k>cp</span> <span class=err>-</span><span class=k>r</span> <span class=k>wordpress</span><span class=cm>/* /var/www/html/
+</span><span class=cm>          sed -i &#39;/&lt;Directory &#34;\/var\/www\/html&#34;&gt;/,/&lt;\/Directory&gt;/ s/AllowOverride None/AllowOverride all/&#39; httpd.conf
+</span><span class=cm>          sudo yum install php72-gd -y
+</span><span class=cm>          sudo service httpd restart
+</span><span class=cm>          sudo yum install vsftpd -y
+</span><span class=cm>          sed -i &#34;s/anonymous_enable=Yes;/anonymous_enable=No;/g&#34; /etc/vsftpd/vsftpd.conf
+</span><span class=cm>          sudo echo &#34;pasv_enable=YES&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
+</span><span class=cm>          sudo echo &#34;pasv_min_port=1024&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
+</span><span class=cm>          sudo echo &#34;pasv_max_port=1048&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
+</span><span class=cm>          sudo echo &#34;pasv_addr_resolve=YES&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
+</span><span class=cm>          sudo echo &#34;pasv_address=davehart.co.uk&#34; &gt;&gt; /etc/vsftpd/vsftpd.conf
+</span><span class=cm>          sudo useradd wordpress-user
+</span><span class=cm>          sudo echo -e &#34;7111065299081&#34; | passwd wordpress 
+</span><span class=cm>          sudo usermod
+</span><span class=cm>          sudo chmod 2775 /var/www
+</span><span class=cm>          sudo find /var/www -type d -exec sudo chmod 2775 {} \;
+</span><span class=cm>          sudo find /var/www -type f -exec sudo chmod 0664 {} \;
+</span><span class=cm>    EOF
+</span><span class=cm>} 
+</span></code></pre></td></tr></table>
 </div>
 </div><p>Any finally we want our new instance to be associated with a DNS name. I recently registered the davehart.co.uk domain and as I wanted to be able to programmatically update the zone I changed the DNS NS (name Servers) to AWS, first defining the zone in Route 53.</p>
 <p>Important point to note, we are defining a record (pointer) for the root (apex) of the domain. In AWS this has to be an A-record unless you are utilising services such as AWS ELB or AWS CloudFront. I might still consume some of the services but for this initial setup the A-Record works for me.</p>
@@ -708,14 +709,14 @@ resource &#34;aws_instance&#34; &#34;wordpress&#34; {
 </span><span class=lnt>9
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback># Route53 #
-resource &#34;aws_route53_record&#34; &#34;wordpress&#34; {
-  zone_id         = var.dns_zone_id
-  name            = &#34;.&#34;
-  type            = &#34;A&#34;
-  ttl             = &#34;5&#34;
-  records         = [aws_instance.wordpress[0].public_ip]
-  allow_overwrite = true
+<pre tabindex=0 class=chroma><code class=language-HCL data-lang=HCL><span class=c1># Route53 #
+</span><span class=c1></span><span class=k>resource</span> <span class=s2>&#34;aws_route53_record&#34; &#34;wordpress&#34;</span> {
+<span class=n>  zone_id</span>         <span class=o>=</span> <span class=k>var</span><span class=p>.</span><span class=k>dns_zone_id</span>
+<span class=n>  name</span>            <span class=o>=</span> <span class=s2>&#34;.&#34;</span>
+<span class=n>  type</span>            <span class=o>=</span> <span class=s2>&#34;A&#34;</span>
+<span class=n>  ttl</span>             <span class=o>=</span> <span class=s2>&#34;5&#34;</span>
+<span class=n>  records</span>         <span class=o>=</span> <span class=p>[</span><span class=k>aws_instance</span><span class=p>.</span><span class=k>wordpress</span><span class=p>[</span><span class=m>0</span><span class=p>].</span><span class=k>public_ip</span><span class=p>]</span>
+<span class=n>  allow_overwrite</span> <span class=o>=</span> <span class=kt>true</span>
 } 
 </code></pre></td></tr></table>
 </div>
@@ -723,41 +724,44 @@ resource &#34;aws_route53_record&#34; &#34;wordpress&#34; {
 <h2 id=github--terraform-cloud>GitHub & Terraform cloud</h2>
 <p>So we have already setup our GitHub repository, lets setup a new workspace on Terraform cloud to organise our infrastructure. I am not going to talk about setting up an account with Terraform cloud, just follow the <a href=https://www.terraform.io/>link</a> and create an account.</p>
 <p>Once logged into app.terraform.io, click</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-71_hu3a7f2de6133e328e7185595d99bded4a_1201_800x600_fit_box_3.png width=157 height=39>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset src=https://davehart.co.uk/post/terraform-aws-wordpress/image-71.png>
 </figure>
 <p>Choose your workflow type, for this I am going to use the version control workspace. Your choice really</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-81_hu3358c8caa0012e2c9eadfab723b871a4_55684_800x600_fit_box_3.png width=697 height=600>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-81_hu3358c8caa0012e2c9eadfab723b871a4_55684_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-aws-wordpress/image-81_hu3358c8caa0012e2c9eadfab723b871a4_55684_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-81_hu3358c8caa0012e2c9eadfab723b871a4_55684_800x0_resize_box_3.png>
 </figure>
 <p>I already have GiHub integrated with Terraform so I can just select that as my VCS. Steps <a href=https://www.terraform.io/docs/cloud/vcs/github-app.html>here</a> if you are interested.</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-100_hua4b635c32c767d988a5e529e8af6ba59_57873_800x600_fit_box_3.png width=756 height=600>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-100_hua4b635c32c767d988a5e529e8af6ba59_57873_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-aws-wordpress/image-100_hua4b635c32c767d988a5e529e8af6ba59_57873_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-100_hua4b635c32c767d988a5e529e8af6ba59_57873_800x0_resize_box_3.png>
 </figure>
 <p>Once I select GitHub it will list all of my repositories. I have selected the one relating to this project</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-200_hua7a60f9504216142db1ad7a92a7d33d1_20909_800x600_fit_box_3.png width=624 height=271>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-200_hua7a60f9504216142db1ad7a92a7d33d1_20909_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-200.png>
 </figure>
 <p>Once you select the Workspace you have a few options. Define the workspace name and in advanced options you can define your VCS branch, Terrform working dir, Workspace name, etc.</p>
 <p>Click the button</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-110_hu5a573924d02492518cf79b726523daa0_1233_800x600_fit_box_3.png width=154 height=39>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset src=https://davehart.co.uk/post/terraform-aws-wordpress/image-110.png>
 </figure>
 <p>All goes well you will see a message like this,</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-120_hu33f851549e0eb8a4ce0ed5ee118d3398_12322_800x600_fit_box_3.png width=708 height=148>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-120_hu33f851549e0eb8a4ce0ed5ee118d3398_12322_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-120.png>
 </figure>
 <p>closely followed by</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-130_hu6a40f7876e1cd36152538a37da3c8f9d_17137_800x600_fit_box_3.png width=675 height=202>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-130_hu6a40f7876e1cd36152538a37da3c8f9d_17137_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-130.png>
 </figure>
 <p>For this deployment I created two environment variables (secret) to hold my AWS keys. The naming is important for the AWS provider to retrieve the correct values</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-140_hu4d8de3099e5736790dd20a03ff7d4a89_15990_800x600_fit_box_3.png width=650 height=221>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-140_hu4d8de3099e5736790dd20a03ff7d4a89_15990_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-140.png>
 </figure>
 <p>If we now jump back to our repository and look at the webhooks, we should see one for Terraform</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-150_hudcc2870f61e17425feebd955a5d6f0b8_40612_800x600_fit_box_3.png width=800 height=501>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-150_hudcc2870f61e17425feebd955a5d6f0b8_40612_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-aws-wordpress/image-150_hudcc2870f61e17425feebd955a5d6f0b8_40612_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-150_hudcc2870f61e17425feebd955a5d6f0b8_40612_800x0_resize_box_3.png>
 </figure>
 <p>Integration complete.</p>
 <h2 id=are-we-there-yet>Are we there yet?</h2>
@@ -770,35 +774,38 @@ resource &#34;aws_route53_record&#34; &#34;wordpress&#34; {
 </span><span class=lnt>3
 </span></code></pre></td>
 <td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>git add *.tf
-git commit -m &#34;Initial&#34;
+<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>git add *.tf
+git commit -m <span class=s2>&#34;Initial&#34;</span>
 git push
 </code></pre></td></tr></table>
 </div>
 </div>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-160_hu542b9b19faf0e68271ad1dffa554b4f3_36219_800x600_fit_box_3.png width=696 height=293>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-160_hu542b9b19faf0e68271ad1dffa554b4f3_36219_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-160.png>
 </figure>
 <p>Quick refresh on our GitHub repository</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-170_hu4e1f5dd357354ce4a49f0546f0444ae8_40847_800x600_fit_box_3.png width=800 height=392>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-170_hu4e1f5dd357354ce4a49f0546f0444ae8_40847_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-aws-wordpress/image-170_hu4e1f5dd357354ce4a49f0546f0444ae8_40847_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-170_hu4e1f5dd357354ce4a49f0546f0444ae8_40847_800x0_resize_box_3.png>
 </figure>
 <p>Lets see what is happening over at Terraform&mldr;Nothing. I seem to have to kick off the first plan manually. Press</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-180_hud42b700527b0a3d726c7054fd6c9191d_1150_800x600_fit_box_3.png width=166 height=40>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset src=https://davehart.co.uk/post/terraform-aws-wordpress/image-180.png>
 </figure>
 <p>Now this deployment gave me</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-190_hudaee5d6a7d4022956c3b9d5195441019_11071_800x600_fit_box_3.png width=800 height=63>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-190_hudaee5d6a7d4022956c3b9d5195441019_11071_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-aws-wordpress/image-190_hudaee5d6a7d4022956c3b9d5195441019_11071_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-190_hudaee5d6a7d4022956c3b9d5195441019_11071_800x0_resize_box_3.png>
 </figure>
 <p>Good reason, I did not define valid environment variables as I have already deployed this and its where I am now writing this article :)</p>
 <p>When all the variables are correct and you have a successful run, you will see</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-210_hucae1380fb83b0ad8e8cb8f802c50bdc6_39219_800x600_fit_box_3.png width=800 height=393>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-210_hucae1380fb83b0ad8e8cb8f802c50bdc6_39219_480x0_resize_box_3.png 480w,
+https://davehart.co.uk/post/terraform-aws-wordpress/image-210_hucae1380fb83b0ad8e8cb8f802c50bdc6_39219_800x0_resize_box_3.png 800w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-210_hucae1380fb83b0ad8e8cb8f802c50bdc6_39219_800x0_resize_box_3.png>
 </figure>
 <p>Your Terraform plans and state are all in Terraform cloud. If you want to tear it all down, navigate to settings, destruction and deletion and queue a destroy plan</p>
-<figure style="padding:.25rem;margin:2rem 0;background-color:#fff">
-<img style=max-width:100%;width:auto;height:auto src=/post/terraform-aws-wordpress/image-220_hu8cec63d4bbb388b38a6ca64511d1eead_14781_800x600_fit_box_3.png width=642 height=176>
+<figure>
+<img sizes="(min-width: 35em) 1200px, 100vw" srcset="https://davehart.co.uk/post/terraform-aws-wordpress/image-220_hu8cec63d4bbb388b38a6ca64511d1eead_14781_480x0_resize_box_3.png 480w," src=https://davehart.co.uk/post/terraform-aws-wordpress/image-220.png>
 </figure>
 <p>I Hope you find this useful and maybe even considered dropping in again. Please take a look at <a href=/post/terraform-aws-and-wordpress-part-ii/>Part II</a> which will dig into some of the user_data and certbot. Great tool to allow you to automate external certificate registration and deployment.</p>
 </div>
