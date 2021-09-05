@@ -6,7 +6,7 @@ enableEmoji = true
 theme = "hugo-theme-jane"
 
 hasCJKLanguage = false    # has chinese/japanese/korean ? # 自动检测是否包含 中文\日文\韩文
-paginate = 6              # Number of articles displayed on the homepage  # 首页每页显示的文章数
+paginate = 8              # Number of articles displayed on the homepage  # 首页每页显示的文章数
 rssLimit = 20             # Limit Entry Count to Rss file # 限制 Rss 文章输出数量
 disqusShortname = ""      # disqus_shortname
 googleAnalytics = ""      # UA-XXXXXXXX-X
@@ -105,7 +105,7 @@ defaultContentLanguage = "en"           # Default language to use
 resampleFilter = "box"
 
 # Default JPEG or WebP quality setting. Default is 75.
-quality = 75
+#quality = 75
 
 # Default hint about what type of image. Currently only used for WebP encoding.
 # Default is "photo".
