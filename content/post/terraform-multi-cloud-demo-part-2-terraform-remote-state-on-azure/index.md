@@ -303,7 +303,7 @@ That should be enough for us to provision our remote state infrastructure. All g
 
 We will first initialise our Terraform configuration so Terraform can prepare our working directory for its use.
 
-{{< figure src="image-2" >}}
+![](demo4-terraform-init.gif)
 
 No issues with the 'terraform init' so lets try 'terraform plan' next including a plan file.
 
