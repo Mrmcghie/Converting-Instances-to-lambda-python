@@ -30,7 +30,7 @@ My repositories all have a naming standard <language/app-usage/location-activity
 
 *   Use the + drop-down menu and select New repository
 
-{{< imgproc image4 Fit "800x600" >}}
+{{< figure src="image4" >}}
 
 *   Give the new repository a memorable name
 *   Add a meaningful description
@@ -39,11 +39,11 @@ My repositories all have a naming standard <language/app-usage/location-activity
 *   For the sake of this example I also added a .gitignore with a Terraform template. I do not plan on initialising this locally but its just good practice.
 *   Click the big green button
 
-{{< imgproc image-211 Fit "800x600" >}}
+{{< figure src="image-211" >}}
 
 Once the repository is created, copy the https link from the code dialog;
 
-{{< imgproc image-34 Fit "800x600" >}}
+{{< figure src="image-34" >}}
 
 Microsoft Visual Studio Code
 ----------------------------
@@ -52,23 +52,23 @@ For development work I use Windows 10 with Microsoft Visual Studio Code. Dependi
 
 *   Navigate to a folder where you want to host your clone of the repository
 
-```
+```bash
 git init
 git clone https://github.com/daveihart/tf-davehart.co.uk-wordpress_.git
 ```
 
-{{< imgproc image-52 Fit "800x600" >}}
+{{< figure src="image-52" >}}
 
 Terraform
 ---------
 
 Now there are many ways to setup your Terraform project. I like to separate out the key sections into their own files. For this project I started with three files. You can deploy your HCL all in one file but I like to think of the possibility to expand on a project and it would be easier if you do all the groundwork from the start. This method will also make it easier to trawl through the code in smaller files should you encounter any issues.
 
-{{< imgproc image-61 Fit "600x400" >}}
+{{< figure src="image-61" >}}
 
 The variables file will hold any variables required for the deployment. Hopefully the optional descriptions added will be enough
 
-```
+```HCL
 # VARIABLES
 
 variable "region" {
@@ -106,7 +106,7 @@ variable "wordpress_count" {
 
 The providers file will only need to hold the AWS provider for this project.
 
-```
+```HCL
 # PROVIDERS
 provider "aws" {
   region = var.region
@@ -119,7 +119,7 @@ Lets start...
 
 The **backend** is used to determine how state is loaded and how the plan and apply are executed. In this example I am using a **remote backend** which is Terraform cloud. My organisation has been defined and a workspace to hold the app state, runs, approvals etc.
 
-```
+```HCL
 # BACKEND
 
 terraform {
@@ -134,7 +134,7 @@ terraform {
 
 The **data sources** in this deployment are defining which VPC, subnet, and AMI we will be using. When deploying the network I use the same environment code. For example we are using a VPC with the name "dev-vpc", the subnet is the "dev-public" subnet and the ami is the latest aws-linux hvm ami using ebs type volumes.
 
-```
+```HCL
 # DATA Sources
 data "aws_vpc" "vpc" {
   tags = {
@@ -177,7 +177,7 @@ The table reflects what we are looking to define
 | ingress | tcp | 80 | 0.0.0.0/0 | HTTP (used for certbot) |
 | egress | all | all | 0.0.0.0/0 | 
 
-```
+```HCL
 # RESOURCES
 
 # SECURITY GROUPS #
@@ -237,7 +237,7 @@ resource "aws_security_group" "wordpress-sg" {
 
 Next up we define our instance. This is where we attempt to minimise any configuration post deployment by defining a lot of user\_data (AWS bootstrap). I will dedicate a separate page to this and drill down into some of the other parts such as certbot and ftp. The eagled eyed will notice the odd password slipping into the user\_data lines. This is next on my list of things to remove. I would like to pass these in from Terraform cloud as sensitive environment variables.
 
-```
+```HCL
 # RESOURCES
 ...Continued
 # INSTANCES #
@@ -309,7 +309,7 @@ Any finally we want our new instance to be associated with a DNS name. I recentl
 
 Important point to note, we are defining a record (pointer) for the root (apex) of the domain. In AWS this has to be an A-record unless you are utilising services such as AWS ELB or AWS CloudFront. I might still consume some of the services but for this initial setup the A-Record works for me.
 
-```
+```HCL
 # Route53 #
 resource "aws_route53_record" "wordpress" {
   zone_id         = var.dns_zone_id
@@ -330,41 +330,41 @@ So we have already setup our GitHub repository, lets setup a new workspace on Te
 
 Once logged into app.terraform.io, click
 
-{{< imgproc image-71 Fit "800x600" >}}
+{{< figure src="image-71" >}}
 
 Choose your workflow type, for this I am going to use the version control workspace. Your choice really
 
-{{< imgproc image-81 Fit "800x600" >}}
+{{< figure src="image-81" >}}
 
 I already have GiHub integrated with Terraform so I can just select that as my VCS. Steps [here](https://www.terraform.io/docs/cloud/vcs/github-app.html) if you are interested.
 
-{{< imgproc image-100 Fit "800x600" >}}
+{{< figure src="image-100" >}}
 
 Once I select GitHub it will list all of my repositories. I have selected the one relating to this project
 
-{{< imgproc image-200 Fit "800x600" >}}
+{{< figure src="image-200" >}}
 
 Once you select the Workspace you have a few options. Define the workspace name and in advanced options you can define your VCS branch, Terrform working dir, Workspace name, etc.
 
 Click the button
 
-{{< imgproc image-110 Fit "800x600" >}}
+{{< figure src="image-110" >}}
 
 All goes well you will see a message like this,
 
-{{< imgproc image-120 Fit "800x600" >}}
+{{< figure src="image-120" >}}
 
 closely followed by
 
-{{< imgproc image-130 Fit "800x600" >}}
+{{< figure src="image-130" >}}
 
 For this deployment I created two environment variables (secret) to hold my AWS keys. The naming is important for the AWS provider to retrieve the correct values
 
-{{< imgproc image-140 Fit "800x600" >}}
+{{< figure src="image-140" >}}
 
 If we now jump back to our repository and look at the webhooks, we should see one for Terraform
 
-{{< imgproc image-150 Fit "800x600" >}}
+{{< figure src="image-150" >}}
 
 Integration complete.
 
@@ -375,34 +375,34 @@ Now we have our HCL code all ready to go, our GitHub repo is primed to notify Te
 
 Back to Microsoft Visual Studio Code and in the PowerShell terminal window (You can have VS Code do all this for you but typing the commands helps me remember them :) )
 
-```
+```bash
 git add *.tf
 git commit -m "Initial"
 git push
 ```
 
-{{< imgproc image-160 Fit "800x600" >}}
+{{< figure src="image-160" >}}
 
 Quick refresh on our GitHub repository
 
-{{< imgproc image-170 Fit "800x600" >}}
+{{< figure src="image-170" >}}
 
 Lets see what is happening over at Terraform...Nothing. I seem to have to kick off the first plan manually. Press
 
-{{< imgproc image-180 Fit "800x600" >}}
+{{< figure src="image-180" >}}
 
 Now this deployment gave me
 
-{{< imgproc image-190 Fit "800x600" >}}
+{{< figure src="image-190" >}}
 
 Good reason, I did not define valid environment variables as I have already deployed this and its where I am now writing this article :)
 
 When all the variables are correct and you have a successful run, you will see
 
-{{< imgproc image-210 Fit "800x600" >}}
+{{< figure src="image-210" >}}
 
 Your Terraform plans and state are all in Terraform cloud. If you want to tear it all down, navigate to settings, destruction and deletion and queue a destroy plan
 
-{{< imgproc image-220 Fit "800x600" >}}
+{{< figure src="image-220" >}}
 
 I Hope you find this useful and maybe even considered dropping in again. Please take a look at [Part II](/post/terraform-aws-and-wordpress-part-ii/) which will dig into some of the user\_data and certbot. Great tool to allow you to automate external certificate registration and deployment.
