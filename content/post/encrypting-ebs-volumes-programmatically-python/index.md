@@ -1,7 +1,7 @@
 ---
 title: 'Encrypting EBS volumes programmatically with python'
 date: Mon, 26 Oct 2020 18:42:52 +0000
-draft: true
+draft: false
 tags: ['AWS', 'AWS', 'Blog', 'ebs', 'encryption', 'GitHub', 'GitHub', 'python', 'python']
 author: "Dave"
 toc: true
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     main()
 ```
 
-### **assume\_roles**
+### **assume_roles**
 
 This is exactly the same as my reference script. Roles are good. Use roles! Bit like cake, I like cake!
 
@@ -182,7 +182,7 @@ def assume_roles(acc,accounts,arole):
     sess_tok = response['Credentials']['SessionToken']
 ```
 
-### **get\_instances**
+### **get_instances**
 
 Another blatant re-use, handy this ;) Once you have worked out the AWS account security settings , you can start retrieving the EC2 instances for processing. The EC2 instances retrieved are filtered to only retrieve instances matching the **search_tag** and **search_value**. These are then added to a list for further processing.
 
@@ -202,7 +202,7 @@ def get_instances(process_acc,filters=[{'Name': 'tag:'+search_tag, 'Values': [se
     return instances 
 ```
 
-### process\_instances
+### process_instances
 
 This is the function which justified its own flowchart above. All of the processing of the EC2 instance is performed within this function and it makes all the calls to the functions which handle the snapshots, detaching, attaching etc.
 
@@ -266,7 +266,7 @@ def process_instance(Iname):
                 if verbose:
                     print(f"{volid} is already encrypted")
         except botocore.exceptions.ClientError as er:   #capture and output any exceptions
-            print("error on check\_volumes")
+            print("error on check_volumes")
             print(er.response['Error']['Message'])
             FailedIid.append(Iid[0])
     if initial_status == "running":
@@ -280,304 +280,300 @@ def process_instance(Iname):
 
 The next few functions are all called by the preceding function so I will try keep them in a logical order starting of with retrieving the EC2 instances run state.
 
-### get\_status
+### get_status
 
-As this script will be stopping and starting instances you want to know what the starting state was. Why? you might ask. well let's say you were using the cloud in the correct manner, it's possible that the instances are already in a stopped state for cost saving purposes. You want to be able to leave them like that when you are finished. This function will work out the state based on the meta state codes. The variable names _initial\_status_ will be returned to the calling function.
+As this script will be stopping and starting instances you want to know what the starting state was. Why? you might ask. well let's say you were using the cloud in the correct manner, it's possible that the instances are already in a stopped state for cost saving purposes. You want to be able to leave them like that when you are finished. This function will work out the state based on the meta state codes. The variable names _initial_status_ will be returned to the calling function.
 
-```
-def get\_status(Iid):
-    global initial\_status
+```python
+def get_status(Iid):
+    global initial_status
     if IstateCode == 16 or IstateCode ==32 or IstateCode == 64 or IstateCode == 80:
         if IstateCode == 16:
-            initial\_status = "running"
+            initial_status = "running"
         elif IstateCode == 32 or IstateCode == 64:
-            initial\_status = "shutting\_down"
+            initial_status = "shutting_down"
         elif IstateCode == 80:
-            initial\_status = "stopped"
+            initial_status = "stopped"
     else:
-            print(f"Warning : Instance {Iid\[0\]} is not running, stopping or stopped. Please perform a manual check")
-            initial\_status = "not\_sure"
-            FailedIid.append(Iid\[0\])
-    return initial\_status #Capture and return the status to the calling function
+            print(f"Warning : Instance {Iid[0]} is not running, stopping or stopped. Please perform a manual check")
+            initial_status = "not_sure"
+            FailedIid.append(Iid[0])
+    return initial_status #Capture and return the status to the calling function
 ```
 
-### **shutdown\_instance**
+### **shutdown_instance**
 
 Shutdown the EC2 instance being processed.
 
-![](https://davehart.co.uk/wp-content/uploads/2020/09/information-1015297_1280-1024x1024.jpg)
-
-#### error handling
+{{< imgproc info Resize "100x" >}}
 
 You might notice a number of try and except statements in the functions throughout this example. Try something, if it fails, capture and output the error. All part of improving my code and learning something new. Good link [here](https://docs.python.org/3/tutorial/errors.html) on this very subject.
 
-```
-def shutdown\_instance(Iid):
+```python
+def shutdown_instance(Iid):
     try:
-        ec2.stop\_instances(InstanceIds=Iid)
-        shutdown\_instance\_wait(Iid,initial\_status)
+        ec2.stop_instances(InstanceIds=Iid)
+        shutdown_instance_wait(Iid,initial_status)
     except botocore.exceptions.ClientError as er:
         print(er.message)
-        print("error on shutdown\_instance")
-        FailedIid.append(Iid\[0\])
-
+        print("error on shutdown_instance")
+        FailedIid.append(Iid[0])
 ```
 
-### **shutdown\_instance\_wait**
+### **shutdown_instance_wait**
 
 call the waiter to ensure you do not try to detach or attach disks whilst the EC2 instance is running. That will not work!
 
-e.g. the _class _EC2.Waiter.InstanceTerminated polls [EC2.Client.describe\_instances()](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_instances) every 15 seconds until a successful state is reached. An error is returned after 40 failed checks (10 minutes if you were working it out).
+e.g. the _class _EC2.Waiter.InstanceTerminated polls [EC2.Client.describe_instances()](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_instances) every 15 seconds until a successful state is reached. An error is returned after 40 failed checks (10 minutes if you were working it out).
 
-```
-def shutdown\_instance\_wait(Iid):
-    shutdown\_instance\_waiter = ec2.get\_waiter('instance\_stopped')
+```python
+def shutdown_instance_wait(Iid):
+    shutdown_instance_waiter = ec2.get_waiter('instance_stopped')
     try:
-        shutdown\_instance\_waiter.wait(InstanceIds=Iid)
+        shutdown_instance_waiter.wait(InstanceIds=Iid)
         if verbose:
-            print(f"Instance {Iid\[0\]} has shutdown successfully")
+            print(f"Instance {Iid[0]} has shutdown successfully")
     except botocore.exceptions.WaiterError as er:
         if "Max attempts exceeded" in er.message:
-            print("error on shutdown\_instance\_wait")
-            print(f"Instance {Iid\[0\]} did not shutdown in 600 seconds")
-            FailedIid.append(Iid\[0\])
+            print("error on shutdown_instance_wait")
+            print(f"Instance {Iid[0]} did not shutdown in 600 seconds")
+            FailedIid.append(Iid[0])
         else:
-            print("error on shutdown\_instance\_wait\_else")
+            print("error on shutdown_instance_wait_else")
             print(er.message)
-            FailedIid.append(Iid\[0\])
-    return initial\_status
+            FailedIid.append(Iid[0])
+    return initial_status
 ```
 
-### detach\_old\_ebs
+### detach_old_ebs
 
 Now that the instance is safely stopped we can detach the EBS volume being processed.
 
-```
-def detach\_old\_ebs():
+```python
+def detach_old_ebs():
     try:
-        global ebs\_wait
-        detach\_ebs = ec2.detach\_volume(
+        global ebs_wait
+        detach_ebs = ec2.detach_volume(
         Device=volatt,
-        InstanceId=Iid\[0\],
+        InstanceId=Iid[0],
         VolumeId=volid,
         )
         if verbose:
             print(f"Waiting for volume {volid} to be detached")
-        ebs\_wait = volid
-        create\_ebs\_wait()
+        ebs_wait = volid
+        create_ebs_wait()
     except botocore.exceptions.ClientError as er:
-        print("error on detach\_old\_ebs")
-        print(er.response\['Error'\]\['Message'\])
-        FailedIid.append(Iid\[0\])
+        print("error on detach_old_ebs")
+        print(er.response['Error']['Message'])
+        FailedIid.append(Iid[0])
 ```
 
-### create\_ebs\_wait
+### create_ebs_wait
 
-We need to ensure the volume is detached before we proceed with either trying to attach another volume to its device attachment or before trying to terminate it. This waiter turned into a bit of a pain. The proceeding steps would not always work as they were seeing the original EBS as still attached. In the end the introduction of a 5 second timer resolved the issue which implies the waiter is not that reliable for the "volume\_available" wait! No tip for him! (Yes, I was dying to say that :) ). We will use this waiter again when we attach the new EBS volume
+We need to ensure the volume is detached before we proceed with either trying to attach another volume to its device attachment or before trying to terminate it. This waiter turned into a bit of a pain. The proceeding steps would not always work as they were seeing the original EBS as still attached. In the end the introduction of a 5 second timer resolved the issue which implies the waiter is not that reliable for the "volume_available" wait! No tip for him! (Yes, I was dying to say that :) ). We will use this waiter again when we attach the new EBS volume
 
-```
-def create\_ebs\_wait():
-    global ebs\_check
-    ebs\_check = \[\]
-    ebs\_check.append(ebs\_wait)
+```python
+def create_ebs_wait():
+    global ebs_check
+    ebs_check = []
+    ebs_check.append(ebs_wait)
     try:
-        create\_ebs\_available\_waiter = ec2.get\_waiter('volume\_available')
-        create\_ebs\_available\_waiter.wait(VolumeIds=ebs\_check)  
+        create_ebs_available_waiter = ec2.get_waiter('volume_available')
+        create_ebs_available_waiter.wait(VolumeIds=ebs_check)  
         time.sleep(5)   #Not impressed that I needed to use this. googling proved I was not alone in this
     except botocore.exceptions.WaiterError as er:
         if "Max attempts exceeded" in er.message:
-            print(f"Volume {enc\_ebs\_id} was not available in the max wait time")
+            print(f"Volume {enc_ebs_id} was not available in the max wait time")
         else:
-            print("error on create\_ebs\_wait")
+            print("error on create_ebs_wait")
             print(er.message)
-            FailedIid.append(Iid\[0\])    
+            FailedIid.append(Iid[0])    
 ```
 
-### snapshot\_volumes
+### snapshot_volumes
 
 Create an unencrypted snapshot of the now detached unencrypted EBS volume. Add the tags we retrieved from the EBS volume to the snapshot.
 
-```
-def snapshot\_volumes():
-    global snap\_shot
-    global unenc\_snapshot
+```python
+def snapshot_volumes():
+    global snap_shot
+    global unenc_snapshot
     try:
-        snap\_shot = ec2.create\_snapshot(
+        snap_shot = ec2.create_snapshot(
             VolumeId=volid,
-            Description=snap\_prefix,
-            TagSpecifications=\[
+            Description=snap_prefix,
+            TagSpecifications=[
                 {
                 'ResourceType' : 'snapshot',
-                'Tags': tags\_list,      
+                'Tags': tags_list,      
                 }
-            \],
+            ],
         )
-        create\_snapshots\_wait(snap\_shot)
-        unenc\_snapshot = snap\_shot.get('SnapshotId')
+        create_snapshots_wait(snap_shot)
+        unenc_snapshot = snap_shot.get('SnapshotId')
         if verbose:
-            print(f"Unencrypted snapshot : {unenc\_snapshot}")
+            print(f"Unencrypted snapshot : {unenc_snapshot}")
     except botocore.exceptions.ClientError as er:
-        print("error on snapshot\_volumes")
-        print(er.response\['Error'\]\['Message'\])
-        FailedIid.append(Iid\[0\])
-
+        print("error on snapshot_volumes")
+        print(er.response['Error']['Message'])
+        FailedIid.append(Iid[0])
 ```
 
-### create\_snapshots\_wait
+### create_snapshots_wait
 
-This function will be called by the snapshot\_volumes function and also the snapshot\_copy function. Both of these rely upon the same waiter, snapshot\_completed
+This function will be called by the snapshot_volumes function and also the snapshot_copy function. Both of these rely upon the same waiter, snapshot_completed
 
-```
-def create\_snapshots\_wait(snap\_shot):
-    global snap\_check
-    snap\_check = \[\]
-    snap\_check.append(snap\_shot.get('SnapshotId'))
+```python
+def create_snapshots_wait(snap_shot):
+    global snap_check
+    snap_check = []
+    snap_check.append(snap_shot.get('SnapshotId'))
     try:
-        create\_snapshot\_waiter = ec2.get\_waiter('snapshot\_completed')
+        create_snapshot_waiter = ec2.get_waiter('snapshot_completed')
         if verbose:
-            print(f"Waiting for {snap\_check\[0\]}")
-        create\_snapshot\_waiter.wait(SnapshotIds=snap\_check)  
+            print(f"Waiting for {snap_check[0]}")
+        create_snapshot_waiter.wait(SnapshotIds=snap_check)  
     except botocore.exceptions.WaiterError as er:
         if "Max attempts exceeded" in er.message:
-            print("error on create\_snapshots\_wait")
-            print(f"Instance {Iid\[0\]} did not shutdown in 600 seconds")
-            FailedIid.append(Iid\[0\])
+            print("error on create_snapshots_wait")
+            print(f"Instance {Iid[0]} did not shutdown in 600 seconds")
+            FailedIid.append(Iid[0])
         else:
-            print("error on create\_snapshots\_wait\_else")
+            print("error on create_snapshots_wait_else")
             print(er.message)
-            FailedIid.append(Iid\[0\])
+            FailedIid.append(Iid[0])
 ```
 
-### snapshot\_copy
+### snapshot_copy
 
 Now we make use of the unencrypted snapshot and create a copy turning on encryption. Again we make use of the original EBS volume tags. We call the preceding wait function again.
 
-```
-def snapshot\_copy():
-    global enc\_snapshot
+```python
+def snapshot_copy():
+    global enc_snapshot
     try:
-        snap\_shot = ec2.copy\_snapshot(
-        Description="encrypted-"+snap\_prefix,
-        TagSpecifications=\[
+        snap_shot = ec2.copy_snapshot(
+        Description="encrypted-"+snap_prefix,
+        TagSpecifications=[
                 {
                 'ResourceType' : 'snapshot',
-                'Tags': tags\_list,      
+                'Tags': tags_list,      
                 }
-            \],  
+            ],  
         Encrypted=True,
         SourceRegion=region,
-        SourceSnapshotId=snap\_check\[0\],
+        SourceSnapshotId=snap_check[0],
         )
-        enc\_snapshot = snap\_shot.get('SnapshotId')
-        create\_snapshots\_wait(snap\_shot)
+        enc_snapshot = snap_shot.get('SnapshotId')
+        create_snapshots_wait(snap_shot)
         if verbose:
-            print(f"encrypted snapshot : {enc\_snapshot}")
+            print(f"encrypted snapshot : {enc_snapshot}")
     except botocore.exceptions.ClientError as er:
-        print("error on snapshot\_copy")
-        print(er.response\['Error'\]\['Message'\])
-        FailedIid.append(Iid\[0\])
-    ec2.delete\_snapshot(SnapshotId=unenc\_snapshot,
+        print("error on snapshot_copy")
+        print(er.response['Error']['Message'])
+        FailedIid.append(Iid[0])
+    ec2.delete_snapshot(SnapshotId=unenc_snapshot,
     )
 ```
 
-### create\_ebs
+### create_ebs
 
 We now make use of the encrypted snapshot to make an encrypted EBS volume
 
-```
-def create\_ebs():
-    global enc\_ebs\_id
+```python
+def create_ebs():
+    global enc_ebs_id
     try:
-        enc\_ebs = ec2.create\_volume(
+        enc_ebs = ec2.create_volume(
         AvailabilityZone=az2,
         Encrypted=True,
-        SnapshotId=enc\_snapshot,
-        TagSpecifications=\[
+        SnapshotId=enc_snapshot,
+        TagSpecifications=[
                 {
                 'ResourceType' : 'volume',
-                'Tags': tags\_list,      
+                'Tags': tags_list,      
                 }
-            \],
+            ],
         )
-        enc\_ebs\_id = enc\_ebs.get('VolumeId')
-        ebs\_wait = enc\_ebs\_id
-        create\_ebs\_wait()
+        enc_ebs_id = enc_ebs.get('VolumeId')
+        ebs_wait = enc_ebs_id
+        create_ebs_wait()
     except botocore.exceptions.ClientError as er:
-        print("error on create\_ebs")
+        print("error on create_ebs")
         print(er.message)
-        FailedIid.append(Iid\[0\])
+        FailedIid.append(Iid[0])
 ```
 
 We call the previously describe waiter we used for the EBS volume detach function
 
-### attach\_new\_ebs
+### attach_new_ebs
 
 We are as sure as we can be (without adding a further check) that the attachment is now free so we can attach the new EBS volume
 
-```
-def attach\_new\_ebs():
+```python
+def attach_new_ebs():
     try:
         if verbose:
-            print(f"Attaching volume {enc\_ebs\_id} to {volatt}")
-        attach\_ebs = ec2.attach\_volume(
+            print(f"Attaching volume {enc_ebs_id} to {volatt}")
+        attach_ebs = ec2.attach_volume(
         Device=volatt,
-        InstanceId=Iid\[0\],
-        VolumeId=enc\_ebs\_id,
+        InstanceId=Iid[0],
+        VolumeId=enc_ebs_id,
         )
     except botocore.exceptions.ClientError as er:
-        print("error on attach\_new\_ebs")
-        print(er.response\['Error'\]\['Message'\])
-        FailedIid.append(Iid\[0\])
+        print("error on attach_new_ebs")
+        print(er.response['Error']['Message'])
+        FailedIid.append(Iid[0])
 ```
 
-### set\_delete\_terminate
+### set_delete_terminate
 
 Ensures that the EBS volumes have the value deleteonetermination set to true. Without this you can end up with a lot of orphaned EBS volumes. It's not required for volume encryption just some housekeeping.
 
-```
-def set\_delete\_terminate():
+```python
+def set_delete_terminate():
     if verbose:
-        print(f"deleteontermination check : {enc\_ebs\_id}")
-    delonterm = ec2.modify\_instance\_attribute(
+        print(f"deleteontermination check : {enc_ebs_id}")
+    delonterm = ec2.modify_instance_attribute(
     Attribute='blockDeviceMapping',
-    BlockDeviceMappings=\[
+    BlockDeviceMappings=[
     {
     'DeviceName': volatt,
     'Ebs': {
     'DeleteOnTermination': True,
-    }}\],
-    InstanceId=Iid\[0\])
+    }}],
+    InstanceId=Iid[0])
 ```
 
-### delete\_ebs
+### delete_ebs
 
 This one depends on how much confidence you have. It will terminate the original unencrypted EBS volume...gulp (You should already have a backup / snapshot lifecycle in place to give you that warm feeling)
 
-```
-def delete\_ebs():
+```python
+def delete_ebs():
     try:
-        delete\_ebs = ec2.delete\_volume(
+        delete_ebs = ec2.delete_volume(
             VolumeId=volid
         )
     except botocore.exceptions.ClientError as er:
-        print("error on delete\_ebs")
-        print(er.response\['Error'\]\['Message'\])
-        FailedIid.append(Iid\[0\])
+        print("error on delete_ebs")
+        print(er.response['Error']['Message'])
+        FailedIid.append(Iid[0])
 ```
 
-### start\_instance
+### start_instance
 
 And finally you want to start the instance back up if this was the original state.
 
-```
-def start\_instance(Iid):
+```python
+def start_instance(Iid):
     try:
-        ec2.start\_instances(InstanceIds=Iid)
-        SuccessIid.append(Iid\[0\])
+        ec2.start_instances(InstanceIds=Iid)
+        SuccessIid.append(Iid[0])
     except botocore.exceptions.ClientError as er:
-        print("error on start\_instance")
-        print(er.response\['Error'\]\['Message'\])
-        FailedIid.append(Iid\[0\])
+        print("error on start_instance")
+        print(er.response['Error']['Message'])
+        FailedIid.append(Iid[0])
 ```
 
 Conclusion
