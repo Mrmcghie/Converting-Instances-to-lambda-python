@@ -52,15 +52,6 @@ defaultContentLanguage = "en"           # Default language to use
   weight = 30
   identifier = "tags"
   url = "/tags/"
-#[[menu.main]]
-#  name = "Categories"
-#  weight = 40
-#  identifier = "categories"
-#  url = "/categories/"
-#[[menu.main]]
-#  name = "external-link"
-#  weight = 50
-#  url = "https://gohugo.io"
 
 
 [params]
@@ -75,7 +66,7 @@ defaultContentLanguage = "en"           # Default language to use
   logoTitle = "Dave's blog"        # default: the title value    # 默认值: 上面设置的title值
   keywords = ["Hugo", "theme","jane"]
   description = "Hugo theme jane example site."
-  archive-paginate = 5
+  archive-paginate = 8
 
   moreMeta = true
 
