@@ -124,6 +124,30 @@ Dave's blog
 <article class="post bg-white">
 <header class=post-header>
 <h1 class=post-title>
+<a class=post-link href=/post/automation-apache-and-route-53/>Automation: Apache and Route 53</a>
+</h1>
+<img src=image/apache_route53_proxy_automation.png alt="Automation: Apache and Route 53">
+<div class=post-meta>
+<time datetime=2021-01-15 class=post-time>
+2021-01-15
+</time>
+<span class=more-meta> 2780 words </span>
+<span class=more-meta> 14 min read </span>
+</div>
+</header>
+<div class=post-content>
+<div class=post-summary>
+This solution consisted of a Route53 hosted zone with A-records directing traffic to an AWS EIP (Elastic IP Address) hosted on a firewall appliance (Fortinet). The firewall had a VIP rule to forward requests received on that EIP to the Apache reverse proxy.
+A regular activity I had to perform for one of my clients was setting up apache reverse proxy services for their development environments. This involved defining a subdomain name for an application, creating an A-record on AWS Route53 and then configuring the rewrite rules which varied per application type.
+</div>
+<div class=read-more>
+<a href=/post/automation-apache-and-route-53/ class=read-more-link>Read more</a>
+</div>
+</div>
+</article>
+<article class="post bg-white">
+<header class=post-header>
+<h1 class=post-title>
 <a class=post-link href=/post/backups-monitoring-and-maintenance-keep-that-blog-alive/>Backups, monitoring and maintenance. Keep that blog alive!</a>
 </h1>
 <img src=image/title/terraform_aws_wordpress_tweaks.png alt="Backups, monitoring and maintenance. Keep that blog alive!">
