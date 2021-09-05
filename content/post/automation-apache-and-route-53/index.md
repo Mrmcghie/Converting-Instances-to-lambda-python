@@ -5,7 +5,7 @@ draft: false
 tags: ['Amazon Linux', 'apache', 'Apache', 'AWS', 'AWS', 'Blog', 'cli', 'cli', 'GitHub', 'linux', 'route53', 'shell', 'shellscript']
 author: "Dave"
 toc: true
-featured_image: "image/apache_route53_proxy_automation.png"
+featured_image: "image/title/apache_route53_proxy_automation.png"
 ---
 This solution consisted of a Route53 hosted zone with A-records directing traffic to an AWS EIP (Elastic IP Address) hosted on a firewall appliance (Fortinet). The firewall had a VIP rule to forward requests received on that EIP to the Apache reverse proxy.
 
