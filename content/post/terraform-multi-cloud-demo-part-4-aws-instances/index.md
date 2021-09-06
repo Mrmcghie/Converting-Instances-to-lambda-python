@@ -5,7 +5,7 @@ draft: false
 tags: ['AWS', 'AWS', 'Blog', 'demo', 'GitHub', 'Remote State', 'remote-state', 'Terraform', 'Terraform']
 author: "Dave"
 toc: true
-featured_image: "terraform-training-demo4-aws-instance.png"
+featured_image: "image/title/terraform-training-demo4-aws-instance.png"
 ---
 
 Now we have our security groups and instance profile, lets look at creating our ec2 instances. We will be defining our own module which fits our requirements and introducing userdata and templatefile functions.
