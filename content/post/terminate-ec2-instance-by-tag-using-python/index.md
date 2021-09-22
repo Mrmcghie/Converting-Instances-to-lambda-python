@@ -5,7 +5,7 @@ draft: false
 tags: ['AWS', 'AWS', 'Blog', 'boto3', 'deleteontermination', 'ec2', 'GitHub', 'GitHub', 'python', 'python', 'snapshot', 'tags', 'waiters']
 author: "Dave"
 toc: true
-featured_image: "image/title/python-aws-terminate-ec2.png"
+featured_image: "/image/title/python-aws-terminate-ec2.png"
 ---
 
 I originally developed this script in bash for a [GoCD](https://www.gocd.org/) pipeline. The intention of the script is to decommission instances in batch whilst generating a final snapshot. For those of you that wonder why is Terraform not being used? (You know who you are) Good question. Not everyone is using Terraform yet and refactoring/importing deployment methods will incur costs which some clients are not prepared to pay.
