@@ -5,7 +5,7 @@ draft: false
 tags: ['apache', 'Apache', 'AWS', 'AWS', 'bash', 'Blog', 'certbot', 'MYSQL', 'shell', 'Terraform', 'Terraform', 'vsftpd', 'WordPress', 'WordPress']
 author: "Dave"
 toc: true
-featured_image: "image/title/terraform_aws_wordpress-2.png"
+featured_image: "/image/title/terraform_aws_wordpress-2.png"
 image: ["/image/information-1015297_1280.jpg"]
 ---
 
